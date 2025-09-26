@@ -13,3 +13,6 @@ coverage/
 .env.local
 .DS_Store
 *.log
+*.json
+*.json
+*.lock
