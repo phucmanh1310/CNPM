@@ -85,10 +85,7 @@ function SignIn() {
             style={{ border: "1px solid ${borderColor}" }}
             onChange={(e) => setEmail(e.target.value)}
             value={email}
-<<<<<<< HEAD
-=======
             required
->>>>>>> ATR_Branch
           />
         </div>
 
