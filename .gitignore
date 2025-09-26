@@ -1,0 +1,20 @@
+# Ignore node_modules and lock files
+node_modules/
+yarn.lock
+package-lock.json
+
+# Ignore build/coverage output directories if có
+dist/
+build/
+coverage/
+
+# Ignore other environment files if bạn dùng
+.env
+.env.local
+.DS_Store
+*.log
+FrontEnd/package-lock.json
+FrontEnd/package.json
+*.json
+*.json
+*.lock
