@@ -6,7 +6,13 @@ import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import { serverURL } from "../App"; // Import từ App.js
 // import authRouter from "./routes/auth.routes.js";
+<<<<<<< HEAD
 import axios from "axios";
+=======
+import {} from "react-spinners";
+import axios from "axios";
+
+>>>>>>> ATR_Branch
 function SignIn() {
   const primaryColor = "#00BFFF";
   //   const hoverColor = "#e64323";
@@ -19,7 +25,14 @@ function SignIn() {
   const [email, setEmail] = useState("");
 
   const [password, setPassword] = useState("");
+<<<<<<< HEAD
   const handleSignIn = async () => {
+=======
+  const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(false);
+  const handleSignIn = async () => {
+    setLoading(true);
+>>>>>>> ATR_Branch
     try {
       const result = await axios.post(
         `${serverURL}/api/auth/signin`,
@@ -27,10 +40,18 @@ function SignIn() {
         { withCredentials: true }
       );
       console.log("Signin success:", result.data);
+<<<<<<< HEAD
     } catch (error) {
       // Xem thông báo lỗi cụ thể từ backend
       console.log("Signin error response:", error.response?.data);
       console.log("Email/password used:", { email, password });
+=======
+      setErr("");
+      setLoading(false);
+    } catch (error) {
+      setErr(error?.response?.data?.message);
+      setLoading(false);
+>>>>>>> ATR_Branch
     }
   };
   return (
@@ -64,6 +85,10 @@ function SignIn() {
             style={{ border: "1px solid ${borderColor}" }}
             onChange={(e) => setEmail(e.target.value)}
             value={email}
+<<<<<<< HEAD
+=======
+            required
+>>>>>>> ATR_Branch
           />
         </div>
 
@@ -83,6 +108,10 @@ function SignIn() {
               style={{ border: "1px solid ${borderColor}" }}
               onChange={(e) => setPassword(e.target.value)}
               value={password}
+<<<<<<< HEAD
+=======
+              required
+>>>>>>> ATR_Branch
             />
 
             <button
@@ -94,8 +123,13 @@ function SignIn() {
           </div>
         </div>
         <div
+<<<<<<< HEAD
           className="text-right mb-4 text-[#00BFFF] font-medium"
           onClick={() => navigate("forgot-password")}
+=======
+          className="text-right mb-4 text-[#00BFFF] font-medium cursor-pointer"
+          onClick={() => navigate("/forgot-password")}
+>>>>>>> ATR_Branch
         >
           Forgot Password?
         </div>
@@ -104,6 +138,7 @@ function SignIn() {
             "w-full font-semibold py-2 rounded-lg transition duration-200 bg-[#00BFFF] text-white hover:bg-[#00BFFF] cursor-pointer"
           }
           onClick={handleSignIn}
+<<<<<<< HEAD
         >
           Sign In
         </button>
@@ -114,6 +149,13 @@ function SignIn() {
           <FcGoogle size={30} />
           <span> Sign In with Google</span>
         </button>
+=======
+          disabled={loading}
+        >
+          {loading ? <clipLoader color="white" size={20} /> : "Sign In"}
+        </button>
+        <p className="text-red-500 text-center my-[10px]">*{err}</p>
+>>>>>>> ATR_Branch
         <p
           className="text-center mt-2 cursor-pointer"
           onClick={() => navigate("/signup")}
