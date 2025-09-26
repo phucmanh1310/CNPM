@@ -1,10 +1,7 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import genToken from "../utils/token.js";
-<<<<<<< HEAD
-=======
 import { sendOtpEmail } from "../utils/mail.js";
->>>>>>> ATR_Branch
 
 export const signUp = async (req, res) => {
   try {
@@ -99,8 +96,6 @@ export const signOut = async (req, res) => {
     return res.status(500).json(`sign Out error ${error}`);
   }
 };
-<<<<<<< HEAD
-=======
 
 export const sendOtp = async (req, res) => {
   try {
@@ -155,4 +150,3 @@ export const resetPassword = async (req, res) => {
     return res.status(500).json(`reset password error ${error}`);
   }
 };
->>>>>>> ATR_Branch
