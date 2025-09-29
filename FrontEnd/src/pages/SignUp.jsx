@@ -177,7 +177,7 @@ function SignUp() {
           onClick={handleSignUp}
           disabled={loading}
         >
-          {loading ? <clipLoader color="white" size={20} /> : "Sign Up"}
+          {loading ? <ClipLoader color="white" size={20} /> : "Sign Up"}
         </button>
         <p className="text-red-500 text-center my-[10px]">*{err}</p>
         <p
