@@ -11,18 +11,19 @@ import { serverURL } from "../App";
 import { useDispatch } from "react-redux";
 import { setUserData } from "../redux/userSlice";
 import { TbReceipt2 } from "react-icons/tb";
-
+import { useNavigate } from 'react-router-dom';
 function Nav() {
     const { userData, currentCity } = useSelector(state => state.user);
     const { myShopData } = useSelector(state => state.owner);
     const [showInfo, setShowInfo] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
     const dispatch = useDispatch();
-
+    //hàm thêm món ăn
+    const navigate = useNavigate();
     // Hàm xử lý đăng xuất
     const handleLogout = async () => {
         try {
-            const result = await axios.get(`${serverURL}/api/auth/signout`, { withCredentials: true })
+            await axios.get(`${serverURL}/api/auth/signout`, { withCredentials: true })
             dispatch(setUserData(null));
         } catch (error) {
             console.log(error);
@@ -96,12 +97,12 @@ function Nav() {
                 {userData.role === "owner" && <>
                     {myShopData && <>
                         <button className="hidden md:flex items-center gap-1 p-2 cursor-pointer rounded-full 
-                            bg-[#ff4d2d]/10 text-[#00BFFF] text-sm font-medium">
+                            bg-[#ff4d2d]/10 text-[#00BFFF] text-sm font-medium" onClick={() => navigate('/add-item')}>
                             <FaPlus size={25} />
                             <span>Add Food Item</span>
                         </button>
                         <button className="md:hidden flex items-center p-2 cursor-pointer rounded-full 
-                            bg-[#ff4d2d]/10 text-[#00BFFF] text-sm font-medium">
+                            bg-[#ff4d2d]/10 text-[#00BFFF] text-sm font-medium" onClick={() => navigate('/add-item')} >
                             <FaPlus size={20} />
                         </button>
                     </>}

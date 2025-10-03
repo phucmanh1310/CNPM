@@ -1,10 +1,14 @@
-import React, { useEffect } from 'react'
+import axios from 'axios'
+import React, { useEffect, useState } from 'react'
 import Nav from './Nav'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { FaUtensils } from 'react-icons/fa'
+import { FaUtensils, FaPlus } from 'react-icons/fa'
 import { FaPen } from 'react-icons/fa6'
-import useGetMyShop from '../hooks/userGetMyShop'
+import { FaThLarge, FaBars } from 'react-icons/fa';
+import useGetMyShop from '../hooks/useGetMyShop'
+import OwnerItemCard from './OwnerItemCard'
+import { serverURL } from "../App";
 
 export default function OwnerDashboard() {
     const navigate = useNavigate()
@@ -28,7 +32,31 @@ export default function OwnerDashboard() {
         }
     }, [myShopData, refetch, navigate])
 
-    // Hiển thị loading khi chưa rõ trạng thái
+    //quản lý item
+    const [viewMode, setViewMode] = useState('grid'); // 'grid' hoặc 'list'
+    const handleEditItem = item => {
+        navigate(`/edit-item/${item._id}`);
+    };
+
+    // deleted sản phẩm
+    const handleDeleteItem = async item => {
+        if (!window.confirm("Delete this item?")) return;
+        try {
+            await axios.delete(
+                `${serverURL}/api/item/delete-item/${item._id}`,
+                { withCredentials: true }
+            );
+            // Cập nhật lại danh sách sau khi xóa
+            await refetch();
+        } catch (err) {
+            console.error("Delete failed", err);
+            alert(err.response?.data?.message || "Error deleting item");
+        }
+    };
+
+
+
+    // Hiển thị loading khDi chưa rõ trạng thái
     if (myShopData === undefined) {
         return (
             <div className="flex justify-center items-center h-screen bg-[#fff9f6]">
@@ -37,8 +65,11 @@ export default function OwnerDashboard() {
             </div>
         )
     }
+    //function handle xoa va edit item
 
-    // Khi đã có shop, render nội dung dashboard
+
+
+    //render
     return (
         <div className="w-full min-h-screen bg-[#fff9f6] flex flex-col items-center">
             <Nav />
@@ -72,12 +103,71 @@ export default function OwnerDashboard() {
                     </div>
                 </div>
 
+                {/* Add Food Item Section - Hiển thị khi chưa có món ăn */}
                 {Array.isArray(myShopData.item) && myShopData.item.length === 0 && (
-                    <div className="text-gray-600 mt-4">
-                        You haven't added any items yet. Click the edit button above to add your first food item.
+                    <div className="flex justify-center items-center p-4 sm:p-6">
+                        <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                            <div className="flex flex-col items-center text-center">
+                                {/* Icon */}
+                                <div className="bg-orange-100 p-4 rounded-full mb-4">
+                                    <FaUtensils className="text-blue-500 w-12 h-12" />
+                                </div>
+
+                                {/* Title */}
+                                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
+                                    Add Your Food Item
+                                </h2>
+
+                                {/* Description */}
+                                <p className="text-gray-600 mb-6 text-sm sm:text-base">
+                                    Share your delicious creations with our customers by adding them to the menu.
+                                </p>
+
+                                {/* Add Food Button */}
+                                <button
+                                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full font-medium shadow-md transition-colors duration-200 flex items-center gap-2"
+                                    onClick={() => navigate('/add-item')}
+                                >
+                                    <FaPlus size={16} />
+                                    Add Food
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 )}
+
+                {/* Toggle View Buttons */}
+                <div className="w-full max-w-4xl flex justify-end gap-2 mt-6 px-4 sm:px-6">
+                    <button
+                        onClick={() => setViewMode('grid')}
+                        className={`p-2 rounded ${viewMode === 'grid' ? 'bg-[#00BFFF] text-white' : 'bg-white text-gray-600'} shadow`}
+                    >
+                        <FaThLarge />
+                    </button>
+                    <button
+                        onClick={() => setViewMode('list')}
+                        className={`p-2 rounded ${viewMode === 'list' ? 'bg-[#00BFFF] text-white' : 'bg-white text-gray-600'} shadow`}
+                    >
+                        <FaBars />
+                    </button>
+                </div>
+
+                {/* Items Container */}
+                <div className={`w-full max-w-4xl mt-4 px-4 sm:px-6 ${viewMode === 'grid'
+                    ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+                    : 'flex flex-col gap-4'
+                    }`}>
+                    {myShopData?.item?.map(item => (
+                        <OwnerItemCard
+                            key={item._id}
+                            item={item}
+                            layout={viewMode}
+                            onEdit={handleEditItem}
+                            onDelete={handleDeleteItem}
+                        />
+                    ))}
+                </div>
             </div>
-        </div>
+        </div >
     )
 }

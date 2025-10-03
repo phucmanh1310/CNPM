@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React from 'react'
 import { IoIosArrowRoundBack } from 'react-icons/io'
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom'
@@ -8,7 +8,7 @@ import axios from 'axios';
 import { serverURL } from '../App';
 import { useDispatch } from 'react-redux';
 import { setMyShopData } from '../redux/ownerSlice';
-import useGetMyShop from '../hooks/userGetMyShop';
+import useGetMyShop from '../hooks/useGetMyShop';
 
 function CreateEditShop() {
     const navigate = useNavigate()
@@ -16,7 +16,7 @@ function CreateEditShop() {
     const { currentCity, currentState, currentAddress } = useSelector(state => state.user)
     const [name, setName] = useState(myShopData?.name || "")
     const [city, setCity] = useState(myShopData?.city || currentCity)
-    const [state, setState] = useState(myShopData?.state || currentState)
+    const [shopState, setShopState] = useState(myShopData?.state || currentState) // renamed
     const [address, setAddress] = useState(myShopData?.address || currentAddress)
     const [frontendImage, setFrontendImage] = useState(myShopData?.image || null)
     const [backendImage, setBackendImage] = useState(null)
@@ -29,12 +29,12 @@ function CreateEditShop() {
     const { refetch } = useGetMyShop();
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Form submitted", { name, city, state, address, backendImage });
+        console.log("Form submitted", { name, city, shopState, address, backendImage });
         try {
             const formData = new FormData()
             formData.append("name", name)
             formData.append("city", city)
-            formData.append("state", state)
+            formData.append("state", shopState)
             formData.append("address", address)
             if (backendImage) {
                 formData.append("image", backendImage)
@@ -51,7 +51,8 @@ function CreateEditShop() {
             // điều hướng về dashboard owner
             navigate("/", { replace: true });
         } catch (error) {
-            console.log(error)
+            console.error('Create/Edit shop failed', error);
+            alert(error.response?.data?.message || 'Error saving shop')
         }
     }
 
@@ -102,8 +103,8 @@ function CreateEditShop() {
                             <label className='block text-sm font-medium text-gray-700 mb-1' htmlFor="">State</label>
                             <input type="text" placeholder='State' className='w-full px-4 py-2
                             border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
-                                value={state}
-                                onChange={(e) => setState(e.target.value)} />
+                                value={shopState}
+                                onChange={(e) => setShopState(e.target.value)} />
                         </div>
                     </div>
                     <div>
