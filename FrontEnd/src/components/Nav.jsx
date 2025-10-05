@@ -13,7 +13,7 @@ import { setUserData } from "../redux/userSlice";
 import { TbReceipt2 } from "react-icons/tb";
 import { useNavigate } from 'react-router-dom';
 function Nav() {
-    const { userData, currentCity } = useSelector(state => state.user);
+    const { userData, currentCity, cartItems } = useSelector(state => state.user);
     const { myShopData } = useSelector(state => state.owner);
     const [showInfo, setShowInfo] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
@@ -90,7 +90,7 @@ function Nav() {
                 {userData.role === "user" &&
                     <div className="relative cursor-pointer">
                         <FiShoppingCart size={25} className="text-[#00BFFF]" />
-                        <span className="absolute -right-2 -top-2 text-xs font-bold text-white bg-[#00BFFF] rounded-full px-[6px] py-[1px]">0</span>
+                        <span className="absolute -right-2 -top-2 text-xs font-bold text-white bg-[#00BFFF] rounded-full px-[6px] py-[1px]">{cartItems.length}</span>
                     </div>
                 }
 

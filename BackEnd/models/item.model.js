@@ -18,6 +18,8 @@ const itemSchema = new mongoose.Schema({
         enum: ["Snack",
             "Main course",
             "Dessert",
+            "Beverage",
+            "Salad",
             "Others"
         ],
         required: true
@@ -31,6 +33,10 @@ const itemSchema = new mongoose.Schema({
         type: String,
         enum: ["veg", "non-veg"],
         required: true
+    },
+    rating: {
+        average: { type: Number, default: 0 },
+        count: { type: Number, default: 0 }
     }
 }, { timestamps: true });
 const Item = mongoose.model("Item", itemSchema);
