@@ -12,10 +12,14 @@ import { serverURL } from "../App";
 
 export default function OwnerDashboard() {
     const navigate = useNavigate()
+    // console.log("Current userData:", useSelector(s => s.user.userData));
 
     // Truy xuất shop data từ Redux
     const { myShopData } = useSelector(state => state.owner)
-
+    // ← THÊM LOG NÀY
+    // console.log("OwnerDashboard - myShopData:", myShopData);
+    // console.log("OwnerDashboard - myShopData type:", typeof myShopData);
+    // console.log("OwnerDashboard - myShopData === undefined:", myShopData === undefined);
     // Gọi hook để fetch và nhận về hàm refetch (nếu cần)
     const { refetch } = useGetMyShop()
 
@@ -56,12 +60,20 @@ export default function OwnerDashboard() {
 
 
 
-    // Hiển thị loading khDi chưa rõ trạng thái
+    // Hiển thị loading khi chưa rõ trạng thái
     if (myShopData === undefined) {
         return (
             <div className="flex justify-center items-center h-screen bg-[#fff9f6]">
                 <Nav />
                 <div className="text-[#00BFFF] text-lg">Loading your shop…</div>
+            </div>
+        )
+    }
+    // Nếu không có shop, tránh render truy cập thuộc tính null trong khi điều hướng
+    if (myShopData === null) {
+        return (
+            <div className="flex justify-center items-center h-screen bg-[#fff9f6]">
+                <Nav />
             </div>
         )
     }

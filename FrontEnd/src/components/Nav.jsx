@@ -88,7 +88,7 @@ function Nav() {
                 }
 
                 {userData.role === "user" &&
-                    <div className="relative cursor-pointer">
+                    <div className="relative cursor-pointer" onClick={() => navigate('/cart')}>
                         <FiShoppingCart size={25} className="text-[#00BFFF]" />
                         <span className="absolute -right-2 -top-2 text-xs font-bold text-white bg-[#00BFFF] rounded-full px-[6px] py-[1px]">{cartItems.length}</span>
                     </div>

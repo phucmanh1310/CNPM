@@ -20,7 +20,7 @@ function useGetShopByCity() {
             }
         }
         fetchShops();
-    }, [currentCity]);
+    }, [currentCity, dispatch]);
 }
 
 export default useGetShopByCity;

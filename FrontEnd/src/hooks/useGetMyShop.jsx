@@ -13,8 +13,9 @@ function useGetMyShop() {
     const fetchShop = useCallback(async () => {
         try {
             const { data } = await axios.get(`${serverURL}/api/shop/get-my`, { withCredentials: true });
-            console.log('fetchShop data:', data);
-            dispatch(setMyShopData(data.shop));
+            // console.log('fetchShop data:', data);
+            // Backend có thể trả về { shop } hoặc trả trực tiếp shop object
+            dispatch(setMyShopData(data?.shop ?? data));
 
         } catch (err) {
             if (err.response?.status === 404) dispatch(setMyShopData(null));
@@ -24,6 +25,7 @@ function useGetMyShop() {
 
     useEffect(() => {
         if (userData?.role === "owner") fetchShop();
+        // console.log("Trigger fetchShop for owner:", userData);
     }, [userData, fetchShop]);
 
     return { myShopData, refetch: fetchShop };
