@@ -6,6 +6,7 @@ import {
     setCurrentCity,
     setCurrentState
 } from "../redux/userSlice.js";
+import { setLocation } from "../redux/mapSlice.js";
 
 function useGetCity() {
     const dispatch = useDispatch();
@@ -20,19 +21,21 @@ function useGetCity() {
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 try {
-                    const { latitude, longitude } = position.coords;
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    dispatch(setLocation({ lat: latitude, lon: longitude }))
                     const { data } = await axios.get(
                         `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&format=json&apiKey=${apiKey}`
                     );
 
                     if (data?.results?.length) {
                         const loc = data.results[0];
-                        const city = loc.city || loc.town || loc.county || "";
-                        const state = loc.state || loc.region || "";
-                        const address = loc.formatted || "";
+                        const city = loc.city || loc.town || loc.county || "";//thành phố
+                        const state = loc.ward || loc.region || "";//phường
+                        const currentAddress = loc.formatted || "";// địa chỉ
                         dispatch(setCurrentCity(city));
                         dispatch(setCurrentState(state));
-                        dispatch(setCurrentAddress(address));
+                        dispatch(setCurrentAddress(currentAddress));
                     }
                     // Nếu không có results thì không dispatch gì
                 } catch (err) {
