@@ -119,7 +119,7 @@ export default function EditItem() {
 
                     {/* Price */}
                     <div>
-                        <label className="block text-sm font-medium mb-1">Price</label>
+                        <label className="block text-sm font-medium mb-1">Price (₫)</label>
                         <input
                             type="number"
                             value={price}

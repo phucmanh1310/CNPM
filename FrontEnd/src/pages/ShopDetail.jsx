@@ -1,104 +1,53 @@
-import React, { useRef, useState, useEffect } from "react";
-import Nav from "./Nav";
-import { categories } from "../category";
-import CategoryCard from "./CategoryCard";
-import { FaCircleChevronLeft, FaCircleChevronRight } from "react-icons/fa6";
-import { FaSearch, FaFilter, FaThLarge, FaBars } from "react-icons/fa";
+import React, { useState, useEffect, useMemo } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import FoodCard from "./FoodCard";
-import ShopCard from "./ShopCard";
+import Nav from "../components/Nav";
+import FoodCard from "../components/FoodCard";
+import { FaArrowLeft, FaMapMarkerAlt, FaStar, FaRegStar, FaClock, FaSearch, FaFilter, FaThLarge, FaBars } from "react-icons/fa";
+import { categories } from "../category";
 
-function UserDashboard() {
-    const { currentCity, shopsInMyCity, itemsInMyCity } = useSelector(
-        (state) => state.user
-    );
+function ShopDetail() {
+    const { shopId } = useParams();
+    const navigate = useNavigate();
+    const { shopsInMyCity, itemsInMyCity } = useSelector((state) => state.user);
 
-    const cateScrollRef = useRef();
-    const shopScrollRef = useRef();
+    // Find the shop by ID
+    const shop = shopsInMyCity?.find(s => s._id === shopId);
 
-    const [showLeftCateButton, setShowLeftCateButton] = useState(false);
-    const [showRightCateButton, setShowRightCateButton] = useState(false);
-    const [showLeftShopButton, setShowLeftShopButton] = useState(false);
-    const [showRightShopButton, setShowRightShopButton] = useState(false);
+    // Filter items for this shop
+    const shopItems = itemsInMyCity?.filter(item => {
+        // item.shop could be ObjectId string or populated object
+        return item.shop?._id === shopId || item.shop === shopId || item.shop?._id?.toString() === shopId;
+    }) || [];
 
-    // New state for view mode, search, and filters
+    // State for filtering and view
     const [viewMode, setViewMode] = useState('grid');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [priceRange, setPriceRange] = useState({ min: '', max: '' });
     const [showFilters, setShowFilters] = useState(false);
-    const [filteredItems, setFilteredItems] = useState([]);
-    const [sortBy, setSortBy] = useState('name'); // 'name', 'price', 'rating'
-    const [sortOrder, setSortOrder] = useState('asc'); // 'asc', 'desc'
+    const [sortBy, setSortBy] = useState('name');
+    const [sortOrder, setSortOrder] = useState('asc');
 
-    const updateButton = (ref, setLeftButton, setRightButton) => {
-        const element = ref.current;
-        if (element) {
-            setLeftButton(element.scrollLeft > 0);
-            setRightButton(
-                element.scrollLeft + element.clientWidth < element.scrollWidth
+    const renderStars = (rating) => {
+        const stars = [];
+        for (let i = 1; i <= 5; i++) {
+            stars.push(
+                i <= rating ? (
+                    <FaStar key={i} className="text-yellow-500 text-sm" />
+                ) : (
+                    <FaRegStar key={i} className="text-yellow-500 text-sm" />
+                )
             );
         }
+        return stars;
     };
 
-    const scrollHandler = (ref, direction) => {
-        if (ref.current) {
-            ref.current.scrollBy({
-                left: direction === "left" ? -250 : 250,
-                behavior: "smooth",
-            });
-        }
-    };
+    // Filter and sort logic using useMemo to prevent infinite loops
+    const filteredItems = useMemo(() => {
+        if (!shopItems || shopItems.length === 0) return [];
 
-    useEffect(() => {
-        const updateAllButtons = () => {
-            updateButton(cateScrollRef, setShowLeftCateButton, setShowRightCateButton);
-            updateButton(shopScrollRef, setShowLeftShopButton, setShowRightShopButton);
-            // updateButton(itemScrollRef, setShowLeftItemButton, setShowRightItemButton);
-        };
-
-        updateAllButtons();
-
-        const cateElement = cateScrollRef.current;
-        const shopElement = shopScrollRef.current;
-        // const itemElement = itemScrollRef.current;
-
-        const handleCateScroll = () =>
-            updateButton(cateScrollRef, setShowLeftCateButton, setShowRightCateButton);
-        const handleShopScroll = () =>
-            updateButton(shopScrollRef, setShowLeftShopButton, setShowRightShopButton);
-        // const handleItemScroll = () =>
-        //     updateButton(itemScrollRef, setShowLeftItemButton, setShowRightItemButton);
-
-        cateElement?.addEventListener("scroll", handleCateScroll);
-        shopElement?.addEventListener("scroll", handleShopScroll);
-        // itemElement?.addEventListener("scroll", handleItemScroll);
-
-        window.addEventListener("resize", updateAllButtons);
-
-        // update lại khi ảnh load xong
-        const timeout = setTimeout(updateAllButtons, 200);
-
-        return () => {
-            cateElement?.removeEventListener("scroll", handleCateScroll);
-            shopElement?.removeEventListener("scroll", handleShopScroll);
-            // itemElement?.removeEventListener("scroll", handleItemScroll);
-            window.removeEventListener("resize", updateAllButtons);
-            clearTimeout(timeout);
-        };
-    }, []);
-
-    // helper truyền callback khi ảnh load xong
-    const handleImageLoad = () => {
-        updateButton(cateScrollRef, setShowLeftCateButton, setShowRightCateButton);
-        updateButton(shopScrollRef, setShowLeftShopButton, setShowRightShopButton);
-    };
-
-    // Filter, search, and sort logic
-    useEffect(() => {
-        if (!itemsInMyCity) return;
-
-        let filtered = itemsInMyCity.filter(item => {
+        let filtered = shopItems.filter(item => {
             // Search by name
             const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -141,8 +90,8 @@ function UserDashboard() {
             }
         });
 
-        setFilteredItems(filtered);
-    }, [itemsInMyCity, searchTerm, selectedCategory, priceRange, sortBy, sortOrder]);
+        return filtered;
+    }, [shopItems, searchTerm, selectedCategory, priceRange, sortBy, sortOrder]);
 
     const clearFilters = () => {
         setSearchTerm('');
@@ -150,105 +99,98 @@ function UserDashboard() {
         setPriceRange({ min: '', max: '' });
     };
 
+    // If shop not found, show loading or error
+    if (!shop) {
+        return (
+            <div className="w-screen min-h-screen flex flex-col items-center justify-center bg-[#fff9f6]">
+                <Nav />
+                <div className="text-center">
+                    <h2 className="text-2xl font-semibold text-gray-800 mb-4">Loading shop...</h2>
+                    <p className="text-gray-600 mb-4">Shop ID: {shopId}</p>
+                    <p className="text-gray-600 mb-4">Available shops: {shopsInMyCity?.length || 0}</p>
+                    <button
+                        onClick={() => navigate('/')}
+                        className="px-6 py-2 bg-[#00BFFF] text-white rounded-lg hover:bg-[#0090cc] transition-colors"
+                    >
+                        Back to Home
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="w-screen min-h-screen flex flex-col gap-5 items-center bg-[#fff9f6] overflow-y-auto">
             <Nav />
 
-            {/* ==================== Categories Section ==================== */}
-            <div className="w-full max-w-6xl flex flex-col gap-5 items-start p-[10px]">
-                <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <h1 className="text-gray-800 text-2xl sm:text-3xl">
-                        Inspiration for your first order
-                    </h1>
-                    <p className="text-gray-600 text-sm">
-                        Browse by category to discover new flavors
-                    </p>
-                </div>
-                <div className="w-full relative">
-                    {showLeftCateButton && (
-                        <button
-                            className="absolute left-0 top-1/2 -translate-y-1/2 bg-[#00BFFF] text-white p-2 rounded-full shadow-lg hover:bg-[#0e40ad] z-10"
-                            onClick={() => scrollHandler(cateScrollRef, "left")}
-                        >
-                            <FaCircleChevronLeft />
-                        </button>
-                    )}
+            {/* Back Button */}
+            <div className="w-full max-w-6xl flex items-center p-[10px]">
+                <button
+                    onClick={() => navigate('/')}
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                    <FaArrowLeft />
+                    Back to Home
+                </button>
+            </div>
 
-                    <div
-                        className="w-full flex overflow-x-auto gap-4 pb-2 scrollbar-thin scrollbar-thumb-[#00BFFF] scrollbar-track-transparent scroll-smooth"
-                        ref={cateScrollRef}
-                    >
-                        {categories.map((cate, index) => (
-                            <CategoryCard
-                                name={cate.name}
-                                image={cate.image}
-                                key={index}
-                                onImageLoad={handleImageLoad}
-                            />
-                        ))}
+            {/* Shop Header */}
+            <div className="w-full max-w-6xl bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                <div className="relative">
+                    <img
+                        src={shop.image}
+                        alt={shop.name}
+                        className="w-full h-64 object-cover"
+                        onError={(e) => {
+                            console.log('Image load error:', shop.image);
+                            e.target.src = 'https://via.placeholder.com/800x300/4F46E5/FFFFFF?text=Shop+Image';
+                        }}
+                    />
+                    <div className="absolute inset-0 bg-opacity-20"></div>
+                    <div className="absolute bottom-4 left-4 text-white">
+                        <h1 className="text-3xl font-bold mb-2">{shop.name}</h1>
+                        <div className="flex items-center gap-4 text-sm">
+                            <div className="flex items-center gap-1">
+                                {renderStars(shop.rating?.average || 4.2)}
+                                <span>({shop.rating?.count || 0} reviews)</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <FaClock />
+                                <span>30-45 min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-6">
+                    <div className="flex items-center text-gray-600 mb-4">
+                        <FaMapMarkerAlt className="text-red-500 mr-2" />
+                        <span>{shop.address}, {shop.city}, {shop.state}</span>
                     </div>
 
-                    {showRightCateButton && (
-                        <button
-                            className="absolute right-0 top-1/2 -translate-y-1/2 bg-[#00BFFF] text-white p-2 rounded-full shadow-lg hover:bg-[#0e40ad] z-10"
-                            onClick={() => scrollHandler(cateScrollRef, "right")}
-                        >
-                            <FaCircleChevronRight />
-                        </button>
-                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                        <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="text-2xl font-bold text-[#00BFFF]">{shopItems.length}</div>
+                            <div className="text-sm text-gray-600">Menu Items</div>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="text-2xl font-bold text-green-600">30.000đ</div>
+                            <div className="text-sm text-gray-600">Delivery</div>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-4">
+                            <div className="text-2xl font-bold text-orange-600">₫100,000</div>
+                            <div className="text-sm text-gray-600">Min Order</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* ==================== Shops Section ==================== */}
+            {/* Menu Section */}
             <div className="w-full max-w-6xl flex flex-col gap-5 items-start p-[10px]">
                 <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <h1 className="text-gray-800 text-2xl sm:text-3xl">
-                        The store should try in {currentCity}
-                    </h1>
-                    <p className="text-gray-600 text-sm">
-                        {shopsInMyCity?.length || 0} restaurants available in your area
-                    </p>
-                </div>
-                <div className="w-full relative">
-                    {showLeftShopButton && (
-                        <button
-                            className="absolute left-0 top-1/2 -translate-y-1/2 bg-[#00BFFF] text-white p-2 rounded-full shadow-lg hover:bg-[#0e40ad] z-10"
-                            onClick={() => scrollHandler(shopScrollRef, "left")}
-                        >
-                            <FaCircleChevronLeft />
-                        </button>
-                    )}
-
-                    <div
-                        className="w-full flex overflow-x-auto gap-4 pb-2 scrollbar-thin scrollbar-thumb-[#00BFFF] scrollbar-track-transparent scroll-smooth"
-                        ref={shopScrollRef}
-                    >
-                        {shopsInMyCity?.map((shop, index) => (
-                            <ShopCard
-                                key={index}
-                                shop={shop}
-                                onImageLoad={handleImageLoad}
-                            />
-                        ))}
-                    </div>
-
-                    {showRightShopButton && (
-                        <button
-                            className="absolute right-0 top-1/2 -translate-y-1/2 bg-[#00BFFF] text-white p-2 rounded-full shadow-lg hover:bg-[#0e40ad] z-10"
-                            onClick={() => scrollHandler(shopScrollRef, "right")}
-                        >
-                            <FaCircleChevronRight />
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            {/* ==================== Food Items Section ==================== */}
-            <div className="w-full max-w-6xl flex flex-col gap-5 items-start p-[10px]">
-                <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <h1 className="text-gray-800 text-2xl sm:text-3xl">
-                        Suggested Food Items
-                    </h1>
+                    <h2 className="text-gray-800 text-2xl sm:text-3xl">
+                        Menu ({shopItems.length} items)
+                    </h2>
 
                     {/* Search and Filter Controls */}
                     <div className="flex items-center gap-3">
@@ -257,7 +199,7 @@ function UserDashboard() {
                             <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Search food items..."
+                                placeholder="Search menu items..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00BFFF] focus:border-transparent"
@@ -344,6 +286,7 @@ function UserDashboard() {
                                 </label>
                                 <input
                                     type="number"
+                                    placeholder="10,000"
                                     value={priceRange.min}
                                     onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
                                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00BFFF]"
@@ -357,6 +300,7 @@ function UserDashboard() {
                                 </label>
                                 <input
                                     type="number"
+                                    placeholder="100,000"
                                     value={priceRange.max}
                                     onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
                                     className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00BFFF]"
@@ -407,7 +351,7 @@ function UserDashboard() {
                     <p className="text-gray-600">
                         {filteredItems.length} items found
                         {(searchTerm || selectedCategory || priceRange.min || priceRange.max) &&
-                            ` (filtered from ${itemsInMyCity?.length || 0} total)`
+                            ` (filtered from ${shopItems.length} total)`
                         }
                     </p>
                     {filteredItems.length > 0 && (
@@ -445,60 +389,8 @@ function UserDashboard() {
                     </div>
                 )}
             </div>
-
-            {/* ==================== Popular Items Section ==================== */}
-            {filteredItems.length > 0 && (
-                <div className="w-full max-w-6xl flex flex-col gap-5 items-start p-[10px]">
-                    <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <h1 className="text-gray-800 text-2xl sm:text-3xl">
-                            Popular in {currentCity}
-                        </h1>
-                        <p className="text-gray-600 text-sm">
-                            Most ordered items this week
-                        </p>
-                    </div>
-
-                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 justify-items-center">
-                        {filteredItems
-                            .filter(item => (item.rating?.average || 0) >= 4.0)
-                            .slice(0, 4)
-                            .map((item, index) => (
-                                <div key={index} className="relative">
-                                    <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10">
-                                        Popular
-                                    </div>
-                                    <FoodCard data={item} layout="grid" />
-                                </div>
-                            ))}
-                    </div>
-                </div>
-            )}
-
-            {/* ==================== Footer Section ==================== */}
-            <div className="w-full bg-gray-50 border-t border-gray-200 py-8">
-                <div className="w-full max-w-6xl mx-auto px-4 text-center">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                        Can't find what you're looking for?
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                        Try adjusting your search criteria or browse different categories
-                    </p>
-                    <div className="flex flex-wrap justify-center gap-2">
-                        {categories.map((category, index) => (
-                            <button
-                                key={index}
-                                onClick={() => setSelectedCategory(category.name)}
-                                className="px-4 py-2 bg-white border border-gray-300 rounded-full text-sm text-gray-600 hover:bg-[#00BFFF] hover:text-white transition-colors"
-                            >
-                                {category.name}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
         </div>
     );
 }
 
-export default UserDashboard;
+export default ShopDetail;

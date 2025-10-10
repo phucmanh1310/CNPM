@@ -70,7 +70,7 @@ function CartPage() {
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-lg font-semibold text-gray-800">Total Amount</h2>
                                 <span className="text-2xl font-bold text-[#00BFFF]">
-                                    {getTotalAmount()} VND
+                                    ₫{getTotalAmount()?.toLocaleString('vi-VN')}
                                 </span>
                             </div>
                         </div>

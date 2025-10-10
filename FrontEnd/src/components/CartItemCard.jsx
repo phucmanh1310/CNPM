@@ -61,12 +61,12 @@ function CartItemCard({ data }) {
                                 {data.name}
                             </h1>
                             <p className="text-sm text-gray-600 mb-2">
-                                <span className='text-gray-700 font-semibold'>Price: </span> {data.price} VND
+                                <span className='text-gray-700 font-semibold'>Price: </span> ₫{data.price?.toLocaleString('vi-VN')}
                                 <br />
                                 <span className='text-gray-700 font-semibold'>Quantity: </span> {data.quantity}
                             </p>
                             <p className="font-bold text-lg text-gray-900">
-                                {data.price * data.quantity} VND
+                                ₫{(data.price * data.quantity)?.toLocaleString('vi-VN')}
                             </p>
                         </div>
                     </div>

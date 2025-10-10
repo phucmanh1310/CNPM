@@ -9,14 +9,20 @@ function useGetShopByCity() {
     const dispatch = useDispatch();
     const { currentCity } = useSelector(state => state.user);
     useEffect(() => {
+        if (!currentCity) {
+            console.log('No current city set');
+            return;
+        }
+
         const fetchShops = async () => {
             try {
+                console.log('Fetching shops for city:', currentCity);
                 const result = await axios.get(`${serverURL}/api/shop/get-by-city/${currentCity}`,
                     { withCredentials: true })
+                console.log('Shops API response:', result.data);
                 dispatch(setShopsInMyCity(result.data))
-                console.log(result.data)
             } catch (error) {
-                console.log("No current shop session" + { error });
+                console.log("Error fetching shops:", error);
             }
         }
         fetchShops();

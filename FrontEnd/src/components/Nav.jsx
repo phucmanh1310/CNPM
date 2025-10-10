@@ -59,7 +59,7 @@ function Nav() {
                 </div>
             }
 
-            <h1 className="text-3xl font-bold mb-2 text-[#00BFFF]">FASTFOOD</h1>
+            <h1 className="text-3xl font-bold mb-2 text-[#00BFFF] cursor-pointer hover:text-[#0090cc] transition-colors" onClick={() => navigate('/')}>FASTFOOD</h1>
 
             {/* Desktop search bar - chỉ hiện cho user */}
             {userData.role === "user" && (

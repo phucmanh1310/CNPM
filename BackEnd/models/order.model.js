@@ -5,6 +5,7 @@ const shopOrderItemSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Item",
     },
+    name: String,
     price: Number,
     quantity: Number,
 
@@ -29,7 +30,7 @@ const orderSchema = new mongoose.Schema({
     },
     paymentMethod: {
         type: String,
-        enum: ["COD", "ONLINE"],
+        enum: ["cod", "online"],
         required: true,
     },
     deliveryAddress: {

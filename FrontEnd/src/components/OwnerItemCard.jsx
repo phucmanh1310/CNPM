@@ -32,7 +32,7 @@ export default function OwnerItemCard({
                 <h2 className="text-lg font-semibold text-[#ff4d2d]">{item.name}</h2>
                 <p ><span className="text-gray-70 font-medium text-sm">Category: </span> {item.category}</p>
                 <p ><span className="text-gray-70 font-medium text-sm">Food Type: </span>{item.foodType}</p>
-                <p className="text-orange-500 font-bold text-lg mt-1">${item.price}</p>
+                <p className="text-orange-500 font-bold text-lg mt-1">₫{item.price?.toLocaleString('vi-VN')}</p>
             </div>
 
             {/* Nút Edit/Delete */}

@@ -49,6 +49,7 @@ export const getMyShop = async (req, res) => {
 export const getShopByCity = async (req, res) => {
     try {
         const { city } = req.params
+        console.log('Searching for shops in city:', city);
 
         const shops = await Shop.find({
             city: {
@@ -56,9 +57,30 @@ export const getShopByCity = async (req, res) => {
             }
 
         }).populate('item')
-        if (!shops) {
-            return res.status(404).json({ message: "Shop not found" });
+
+        console.log('Found shops:', shops.length);
+        console.log('Shops data:', shops.map(s => ({ name: s.name, city: s.city, state: s.state })));
+
+        if (!shops || shops.length === 0) {
+            // If no shops found with exact match, try partial match
+            const partialShops = await Shop.find({
+                city: {
+                    $regex: new RegExp(city, "i")
+                }
+            }).populate('item');
+
+            console.log('Partial match shops:', partialShops.length);
+
+            if (partialShops.length === 0) {
+                // If still no shops, return all shops as fallback
+                console.log('No shops found for city, returning all shops');
+                const allShops = await Shop.find({}).populate('item');
+                return res.status(200).json(allShops);
+            }
+
+            return res.status(200).json(partialShops);
         }
+
         return res.status(200).json(shops);
     } catch (error) {
         console.error("get shop by city error:", error);

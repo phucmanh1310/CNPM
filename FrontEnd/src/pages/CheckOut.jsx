@@ -19,6 +19,8 @@ import {
     reverseGeocodeFromCoordinates
 } from '../redux/mapSlice';
 import { ClipLoader } from 'react-spinners';
+import axios from 'axios';
+import { serverURL } from '../App';
 
 // Debounce hook
 function useDebounce(callback, delay) {
@@ -185,6 +187,25 @@ function CheckOut() {
             </div>
         );
     }
+
+    const handlePlaceOrder = async () => {
+        try {
+            const result = await axios.post(`${serverURL}/api/order/placeOrder`, {
+                paymentMethod,
+                deliveryAddress: {
+                    text: inputAddress,
+                    latitude: location.lat,
+                    longitude: location.lon
+                },
+                totalAmount: total,
+                cartItems
+            }, { withCredentials: true })
+            console.log("dathang" + result.data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     return (
         <div className="min-h-screen bg-[#fff9f6] flex items-center justify-center p-6">
             <div className='absolute top-[20px] left-[20px] z-[1000] cursor-pointer' onClick={() => navigate("/")}>
@@ -464,7 +485,8 @@ function CheckOut() {
                 </section>
 
                 {/*Submit button*/}
-                <button className="w-full bg-[#00BFFF] text-white py-3 rounded-md font-semibold hover:bg-blue-600 transition">
+                <button className="w-full bg-[#00BFFF] text-white py-3 rounded-md font-semibold hover:bg-blue-600 transition"
+                    onClick={handlePlaceOrder}>
                     {paymentMethod == "cod" ? "Place Order" : "Pay & Place Order"}
                 </button>
             </div >
