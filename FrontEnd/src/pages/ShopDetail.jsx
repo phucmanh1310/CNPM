@@ -127,10 +127,10 @@ function ShopDetail() {
             <div className="w-full max-w-6xl flex items-center p-[10px]">
                 <button
                     onClick={() => navigate('/')}
-                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 hover:bg-gray-50"
+                    title="Back to Home"
                 >
-                    <FaArrowLeft />
-                    Back to Home
+                    <FaArrowLeft className="text-[#00BFFF]" size={16} />
                 </button>
             </div>
 

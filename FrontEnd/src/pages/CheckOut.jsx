@@ -18,6 +18,7 @@ import {
     setLocation,
     reverseGeocodeFromCoordinates
 } from '../redux/mapSlice';
+import { clearCart } from '../redux/userSlice';
 import { ClipLoader } from 'react-spinners';
 import axios from 'axios';
 import { serverURL } from '../App';
@@ -189,6 +190,10 @@ function CheckOut() {
     }
 
     const handlePlaceOrder = async () => {
+        if (!inputAddress) {
+            alert("Please enter a delivery address.");
+            return;
+        }
         try {
             const result = await axios.post(`${serverURL}/api/order/placeOrder`, {
                 paymentMethod,
@@ -197,19 +202,39 @@ function CheckOut() {
                     latitude: location.lat,
                     longitude: location.lon
                 },
-                totalAmount: total,
                 cartItems
             }, { withCredentials: true })
-            console.log("dathang" + result.data)
+
+            console.log('Order placed successfully:', result.data)
+
+            // Clear cart after successful order
+            dispatch(clearCart());
+
+            // Navigate to order placed page with order info
+            navigate("/order-placed", {
+                state: {
+                    orders: result.data.orders,
+                    totalOrders: result.data.totalOrders,
+                    message: result.data.message
+                }
+            })
         } catch (error) {
-            console.log(error)
+            console.log('Error placing order:', error)
+            alert('Failed to place order. Please try again.');
         }
     }
 
     return (
         <div className="min-h-screen bg-[#fff9f6] flex items-center justify-center p-6">
-            <div className='absolute top-[20px] left-[20px] z-[1000] cursor-pointer' onClick={() => navigate("/")}>
-                <IoIosArrowRoundBack size={35} className='text-[#00BFFF]' />
+            {/* Back Button */}
+            <div className='absolute top-[20px] left-[20px] z-[1000]'>
+                <button
+                    className="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 hover:bg-gray-50"
+                    onClick={() => navigate("/cart")}
+                    title="Back to Home"
+                >
+                    <IoIosArrowRoundBack size={24} className='text-[#00BFFF]' />
+                </button>
             </div>
 
             <div className="w-full max-w-[900px] bg-white rounded-2xl shadow-lg p-6 space-y-6">

@@ -4,6 +4,7 @@ const shopOrderItemSchema = new mongoose.Schema({
     item: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Item",
+        required: true,
     },
     name: String,
     price: Number,
@@ -21,6 +22,19 @@ const shopOrderSchema = new mongoose.Schema({
         ref: "User",
     },
     subtotal: Number,
+    status: {
+        type: String,
+        enum: ["pending", "confirmed", "preparing", "prepared", "drone assigned", "out for delivery", "delivered", "cancelled"],
+        default: "pending"
+    },
+    cancelReason: {
+        type: String,
+        default: null
+    },
+    cancelledAt: {
+        type: Date,
+        default: null
+    },
     shopOrderItems: [shopOrderItemSchema]
 }, { timestamps: true })
 const orderSchema = new mongoose.Schema({
@@ -42,7 +56,18 @@ const orderSchema = new mongoose.Schema({
         type: Number,
     },
 
-    shopOrder: [shopOrderSchema]
+    shopOrder: [shopOrderSchema],
+
+    // Drone assignment fields
+    assignedDroneId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Drone",
+        default: null
+    },
+    droneAssignedAt: {
+        type: Date,
+        default: null
+    }
 
 }, { timestamps: true })
 

@@ -11,15 +11,24 @@ import { serverURL } from "../App";
 import { useDispatch } from "react-redux";
 import { setUserData } from "../redux/userSlice";
 import { TbReceipt2 } from "react-icons/tb";
+import { FaPlane } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
+import useGetOwnerOrderCount from '../hooks/useGetOwnerOrderCount';
 function Nav() {
     const { userData, currentCity, cartItems } = useSelector(state => state.user);
     const { myShopData } = useSelector(state => state.owner);
     const [showInfo, setShowInfo] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
     const dispatch = useDispatch();
-    //hàm thêm món ăn
     const navigate = useNavigate();
+
+    // Hook để lấy số lượng đơn hàng pending cho owner
+    const { orderCount } = useGetOwnerOrderCount();
+
+    // Kiểm tra localStorage để xem đã xem orders chưa
+    const hasViewedOrders = localStorage.getItem('hasViewedOrders') === 'true';
+
+    //hàm thêm món ăn
     // Hàm xử lý đăng xuất
     const handleLogout = async () => {
         try {
@@ -29,6 +38,12 @@ function Nav() {
             console.log(error);
         }
     }
+
+    // Hàm xử lý khi click vào My Orders
+    const handleMyOrdersClick = () => {
+        localStorage.setItem('hasViewedOrders', 'true');
+        navigate('/my-orders');
+    };
 
     // ✅ KIỂM TRA LOADING STATE - Sửa đổi quan trọng
     if (userData === null) {
@@ -107,21 +122,56 @@ function Nav() {
                         </button>
                     </>}
 
-                    <div className="hidden md:flex items-center gap-2 cursor-pointer relative px-3 py-1 
-                        rounded-lg bg-[#ff4d2d]/10 text-[#00BFFF] text-sm font-medium">
+                    <div className={`hidden md:flex items-center gap-2 cursor-pointer relative px-3 py-1 
+                        rounded-lg text-sm font-medium transition-all duration-200 ${orderCount > 0 && !hasViewedOrders
+                            ? 'bg-red-100 text-red-600 border-2 border-red-300 shadow-md'
+                            : 'bg-[#ff4d2d]/10 text-[#00BFFF]'
+                        }`} onClick={handleMyOrdersClick}>
                         <TbReceipt2 size={25} />
                         <span>My Orders</span>
-                        <span className="absolute -right-2 -top-2 text-xs font-bold text-white bg-[#00BFFF] rounded-full px-[6px] py-[1px]">0</span>
+                        {orderCount > 0 && (
+                            <span className={`absolute -right-2 -top-2 text-xs font-bold text-white rounded-full px-[6px] py-[1px] ${!hasViewedOrders ? 'bg-red-500 animate-pulse' : 'bg-[#00BFFF]'
+                                }`}>
+                                {orderCount}
+                            </span>
+                        )}
                     </div>
-                    <div className="md:hidden flex items-center gap-2 cursor-pointer relative px-3 py-1 
-                        rounded-lg bg-[#ff4d2d]/10 text-[#00BFFF] text-sm font-medium">
+                    <div className={`md:hidden flex items-center gap-2 cursor-pointer relative px-3 py-1 
+                        rounded-lg text-sm font-medium transition-all duration-200 ${orderCount > 0 && !hasViewedOrders
+                            ? 'bg-red-100 text-red-600 border-2 border-red-300 shadow-md'
+                            : 'bg-[#ff4d2d]/10 text-[#00BFFF]'
+                        }`} onClick={handleMyOrdersClick}>
                         <TbReceipt2 size={25} />
-                        <span className="absolute -right-2 -top-2 text-xs font-bold text-white bg-[#00BFFF] rounded-full px-[6px] py-[1px]">0</span>
+                        {orderCount > 0 && (
+                            <span className={`absolute -right-2 -top-2 text-xs font-bold text-white rounded-full px-[6px] py-[1px] ${!hasViewedOrders ? 'bg-red-500 animate-pulse' : 'bg-[#00BFFF]'
+                                }`}>
+                                {orderCount}
+                            </span>
+                        )}
                     </div>
                 </>}
 
+                {/* Drone Management link for owners */}
+                {userData.role === "owner" && myShopData && (
+                    <>
+                        <button
+                            className="hidden md:flex items-center gap-2 px-3 py-1 rounded-lg bg-[#ff4d2d]/10 text-[#00BFFF] text-sm font-medium hover:bg-[#ff4d2d]/20 transition-colors"
+                            onClick={() => navigate('/drone-management')}
+                        >
+                            <FaPlane size={20} />
+                            <span>Drone Management</span>
+                        </button>
+                        <button
+                            className="md:hidden flex items-center gap-2 px-3 py-1 rounded-lg bg-[#ff4d2d]/10 text-[#00BFFF] text-sm font-medium hover:bg-[#ff4d2d]/20 transition-colors"
+                            onClick={() => navigate('/drone-management')}
+                        >
+                            <FaPlane size={20} />
+                        </button>
+                    </>
+                )}
+
                 {userData.role === "user" && (
-                    <button className="hidden md:block px-3 py-1 rounded-lg bg-[#ff4d2d]/10 text-[#00BFFF] text-sm font-medium">
+                    <button className="hidden md:block px-3 py-1 rounded-lg bg-[#ff4d2d]/10 text-[#00BFFF] text-sm font-medium" onClick={() => navigate('/my-orders')}>
                         My Orders
                     </button>
                 )}
@@ -137,7 +187,7 @@ function Nav() {
                     <div className='fixed top-[80px] right-[10px] md:right-[10%] lg:right-[25%] w-[180px] bg-white shadow-2xl rounded-xl p-[20px] flex flex-col gap-[10px] z-[9999]'>
                         <div className="text-[17px] font-semibold">{userData.fullName}</div>
                         {userData.role === "user" && (
-                            <div className="md:hidden text-[#00BFFF] font-semibold cursor-pointer">My Orders</div>
+                            <div className="md:hidden text-[#00BFFF] font-semibold cursor-pointer" onClick={() => navigate('/my-orders')}>My Orders</div>
                         )}
                         <div className="text-[#00BFFF] font-semibold cursor-pointer"
                             onClick={handleLogout}>Log Out</div>

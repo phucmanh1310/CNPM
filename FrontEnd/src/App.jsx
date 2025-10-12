@@ -17,6 +17,10 @@ import useGetItemsByCity from './hooks/useGetItemsByCity.jsx';
 import CartPage from './pages/CartPage.jsx';
 import CheckOut from './pages/CheckOut.jsx';
 import ShopDetail from './pages/ShopDetail.jsx';
+import OrderPlaced from './pages/OrderPlaced.jsx';
+import MyOrders from './pages/MyOrders.jsx';
+import DroneManagement from './pages/DroneManagement.jsx';
+
 export const serverURL = "http://localhost:8000";
 
 function App() {
@@ -39,6 +43,9 @@ function App() {
       <Route path="/cart" element={userData ? <CartPage /> : <Navigate to="/signin" />} />
       <Route path="/checkout" element={userData ? <CheckOut /> : <Navigate to="/signin" />} />
       <Route path="/shop/:shopId" element={userData ? <ShopDetail /> : <Navigate to="/signin" />} />
+      <Route path="/order-placed" element={userData ? <OrderPlaced /> : <Navigate to="/signin" />} />
+      <Route path="/my-orders" element={userData ? <MyOrders /> : <Navigate to="/signin" />} />
+      <Route path="/drone-management" element={userData ? <DroneManagement /> : <Navigate to="/signin" />} />
 
     </Routes>
   );
