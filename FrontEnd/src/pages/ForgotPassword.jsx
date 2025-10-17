@@ -3,7 +3,7 @@ import { IoMdArrowRoundBack } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { serverURL } from "../App";
-import {} from "react-spinners";
+import { } from "react-spinners";
 
 function ForgotPassword() {
   const [step, setStep] = React.useState(1);
@@ -112,7 +112,7 @@ function ForgotPassword() {
               onClick={handleSendOtp}
               disabled={loading}
             >
-              {loading ? <clipLoader color="white" size={20} /> : "Send OTP"}
+              {loading ? <ClipLoader color="white" size={20} /> : "Send OTP"}
             </button>
           </div>
         )}
@@ -141,7 +141,7 @@ function ForgotPassword() {
               onClick={handleVerifyOtp}
               disabled={loading}
             >
-              {loading ? <clipLoader color="white" size={20} /> : "Verify OTP"}
+              {loading ? <ClipLoader color="white" size={20} /> : "Verify OTP"}
             </button>
             <p className="text-red-500 text-center my-[10px]">*{err}</p>
           </div>
@@ -188,7 +188,7 @@ function ForgotPassword() {
               disabled={loading}
             >
               {loading ? (
-                <clipLoader color="white" size={20} />
+                <ClipLoader color="white" size={20} />
               ) : (
                 "Reset Password"
               )}

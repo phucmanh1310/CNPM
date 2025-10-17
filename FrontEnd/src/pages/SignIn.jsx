@@ -10,6 +10,8 @@ import { } from "react-spinners";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { setUserData } from "../redux/userSlice"; // Adjust the path as needed
+import { ClipLoader } from 'react-spinners';
+
 
 function SignIn() {
   const primaryColor = "#00BFFF";
@@ -26,6 +28,25 @@ function SignIn() {
   const [err, setErr] = useState("");
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
+
+  // const handleSignIn = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const result = await axios.post(
+  //       `${serverURL}/api/auth/signin`,
+  //       { email, password },
+  //       { withCredentials: true }
+  //     );
+  //     dispatch(setUserData(result.data));
+  //     console.log("Signin success:", result.data);
+  //     navigate(result.user.role === 'owner' ? '/owner' : '/user', { replace: true });
+  //     setErr("");
+  //     setLoading(false);
+  //   } catch (error) {
+  //     setErr(error?.response?.data?.message);
+  //     setLoading(false);
+  //   }
+  // };
   const handleSignIn = async () => {
     setLoading(true);
     try {
@@ -34,15 +55,27 @@ function SignIn() {
         { email, password },
         { withCredentials: true }
       );
-      dispatch(setUserData(result.data));
+
+      // ✅ Dispatch dữ liệu user vào Redux
+      dispatch(setUserData(result.data.user)); // Chú ý: result.data.user, không phải result.data
+
       console.log("Signin success:", result.data);
       setErr("");
       setLoading(false);
+
+      // ✅ Navigate dựa trên role
+      if (result.data.user.role === "owner") {
+        navigate("/owner", { replace: true });
+      } else {
+        navigate("/user", { replace: true });
+      }
+
     } catch (error) {
       setErr(error?.response?.data?.message);
       setLoading(false);
     }
   };
+
   return (
     <div
       className="min-h-screen w-full flex items-center justify-center p-4"
@@ -118,7 +151,7 @@ function SignIn() {
           onClick={handleSignIn}
           disabled={loading}
         >
-          {loading ? <clipLoader color="white" size={20} /> : "Sign In"}
+          {loading ? <ClipLoader color="white" size={20} /> : "Sign In"}
         </button>
         <p className="text-red-500 text-center my-[10px]">*{err}</p>
         <p
