@@ -1,33 +1,55 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { formatCurrency } from '../utils/currency';
 import CancelOrderModal from './CancelOrderModal';
 
 function OrderCard({ order, userRole, onStatusUpdate, onCancelOrder, onConfirmDelivery }) {
+    const navigate = useNavigate();
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [selectedShopOrder, setSelectedShopOrder] = useState(null);
 
     const getStatusColor = (status) => {
         switch (status) {
             case 'pending': return 'bg-yellow-100 text-yellow-800';
-            case 'confirmed': return 'bg-blue-100 text-blue-800';
+            case 'accepted': return 'bg-blue-100 text-blue-800';
             case 'preparing': return 'bg-orange-100 text-orange-800';
             case 'prepared': return 'bg-indigo-100 text-indigo-800';
-            case 'drone assigned': return 'bg-cyan-100 text-cyan-800';
-            case 'out for delivery': return 'bg-purple-100 text-purple-800';
+            case 'handed over to drone': return 'bg-cyan-100 text-cyan-800';
+            case 'delivering': return 'bg-purple-100 text-purple-800';
             case 'delivered': return 'bg-green-100 text-green-800';
             case 'cancelled': return 'bg-red-100 text-red-800';
             default: return 'bg-gray-100 text-gray-800';
         }
     };
 
+    const getPaymentStatusColor = (status) => {
+        switch (status) {
+            case 'success': return 'bg-green-100 text-green-800';
+            case 'pending': return 'bg-yellow-100 text-yellow-800';
+            case 'failed': return 'bg-red-100 text-red-800';
+            case 'cancelled': return 'bg-gray-100 text-gray-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    const getPaymentStatusText = (status) => {
+        switch (status) {
+            case 'success': return 'Thanh toán thành công';
+            case 'pending': return 'Chờ thanh toán';
+            case 'failed': return 'Thanh toán thất bại';
+            case 'cancelled': return 'Thanh toán đã hủy';
+            default: return 'Không xác định';
+        }
+    };
+
     const getNextStatus = (currentStatus) => {
         switch (currentStatus) {
-            case 'pending': return 'confirmed';
-            case 'confirmed': return 'preparing';
+            case 'pending': return 'accepted';
+            case 'accepted': return 'preparing';
             case 'preparing': return 'prepared';
-            case 'prepared': return 'drone assigned'; // This will be handled by drone assignment
-            case 'drone assigned': return 'out for delivery'; // Auto-transition
-            case 'out for delivery': return 'delivered';
+            case 'prepared': return 'handed over to drone'; // This will be handled by drone assignment
+            case 'handed over to drone': return 'delivering'; // Auto-transition
+            case 'delivering': return 'delivered';
             default: return null;
         }
     };
@@ -72,6 +94,11 @@ function OrderCard({ order, userRole, onStatusUpdate, onCancelOrder, onConfirmDe
                     <p className="text-sm text-gray-600">
                         {order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment'}
                     </p>
+                    <div className="mt-1">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(order.paymentStatus)}`}>
+                            {getPaymentStatusText(order.paymentStatus)}
+                        </span>
+                    </div>
                 </div>
             </div>
 
@@ -147,7 +174,7 @@ function OrderCard({ order, userRole, onStatusUpdate, onCancelOrder, onConfirmDe
                     {userRole === 'owner' && shopOrder.status !== 'delivered' && shopOrder.status !== 'cancelled' && (
                         <div className="mt-3 space-y-2">
                             {/* Regular status update button */}
-                            {shopOrder.status !== 'prepared' && shopOrder.status !== 'drone assigned' && (
+                            {shopOrder.status !== 'prepared' && shopOrder.status !== 'handed over to drone' && shopOrder.status !== 'delivering' && (
                                 <button
                                     onClick={() => {
                                         const nextStatus = getNextStatus(shopOrder.status);
@@ -157,10 +184,9 @@ function OrderCard({ order, userRole, onStatusUpdate, onCancelOrder, onConfirmDe
                                     }}
                                     className="w-full bg-[#00BFFF] text-white py-2 px-4 rounded-lg font-medium hover:bg-[#0090cc] transition-colors"
                                 >
-                                    {shopOrder.status === 'pending' && 'Confirm Order'}
-                                    {shopOrder.status === 'confirmed' && 'Start Preparing'}
+                                    {shopOrder.status === 'pending' && 'Accept Order'}
+                                    {shopOrder.status === 'accepted' && 'Start Preparing'}
                                     {shopOrder.status === 'preparing' && 'Mark as Prepared'}
-                                    {shopOrder.status === 'out for delivery' && 'Mark as Delivered'}
                                 </button>
                             )}
 
@@ -168,9 +194,18 @@ function OrderCard({ order, userRole, onStatusUpdate, onCancelOrder, onConfirmDe
                             {shopOrder.status === 'prepared' && (
                                 <button
                                     onClick={() => {
-                                        // This will trigger drone assignment modal
-                                        // For now, we'll update status to drone assigned
-                                        onStatusUpdate(order._id, shopOrder._id, 'drone assigned');
+                                        // Navigate to drone management with order info
+                                        navigate('/drone-management', {
+                                            state: {
+                                                assignOrder: {
+                                                    orderId: order._id,
+                                                    shopOrderId: shopOrder._id,
+                                                    shopId: shopOrder.shop._id,
+                                                    shopName: shopOrder.shop.name,
+                                                    customerName: order.user?.name
+                                                }
+                                            }
+                                        });
                                     }}
                                     className="w-full bg-indigo-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-600 transition-colors"
                                 >
@@ -178,10 +213,10 @@ function OrderCard({ order, userRole, onStatusUpdate, onCancelOrder, onConfirmDe
                                 </button>
                             )}
 
-                            {/* Drone assigned status info */}
-                            {shopOrder.status === 'drone assigned' && (
+                            {/* Handed over to drone status info */}
+                            {shopOrder.status === 'handed over to drone' && (
                                 <div className="w-full bg-cyan-100 text-cyan-800 py-2 px-4 rounded-lg text-center font-medium">
-                                    Drone Assigned - Preparing for Delivery
+                                    Handed Over to Drone - Preparing for Delivery
                                 </div>
                             )}
 
@@ -202,15 +237,28 @@ function OrderCard({ order, userRole, onStatusUpdate, onCancelOrder, onConfirmDe
             {/* Customer Actions */}
             {userRole === 'user' && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
-                    {order.shopOrder.some(shopOrder => shopOrder.status === 'out for delivery') && (
+                    {order.shopOrder.some(shopOrder => shopOrder.status === 'delivering') && (
                         <div className="space-y-2">
                             <h4 className="text-sm font-semibold text-gray-700 mb-2">Delivery Status:</h4>
                             {order.shopOrder.map((shopOrder, index) => (
-                                shopOrder.status === 'out for delivery' && (
+                                shopOrder.status === 'delivering' && (
                                     <div key={index} className="flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                                        <div>
+                                        <div className="flex-1">
                                             <p className="font-medium text-purple-800">{shopOrder.shop?.name}</p>
-                                            <p className="text-sm text-purple-600">Drone is on the way to your location</p>
+                                            <p className="text-sm text-purple-600">Your order is being delivered to you</p>
+                                            {order.assignedDroneId && (
+                                                <div className="mt-2 p-2 bg-white bg-opacity-50 rounded">
+                                                    <p className="text-xs text-purple-700">
+                                                        <span className="font-medium">Drone:</span> {order.assignedDroneId?.name || order.assignedDroneId}
+                                                    </p>
+                                                    <p className="text-xs text-purple-700">
+                                                        <span className="font-medium">Status:</span> {order.assignedDroneId?.status || 'Unknown'}
+                                                    </p>
+                                                    <p className="text-xs text-purple-700">
+                                                        <span className="font-medium">Assigned at:</span> {order.droneAssignedAt ? new Date(order.droneAssignedAt).toLocaleString('vi-VN') : 'N/A'}
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
                                         <button
                                             onClick={() => onConfirmDelivery(order._id, shopOrder._id)}
@@ -226,7 +274,12 @@ function OrderCard({ order, userRole, onStatusUpdate, onCancelOrder, onConfirmDe
 
                     {order.shopOrder.every(shopOrder => shopOrder.status === 'delivered') && (
                         <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-center">
-                            <p className="text-green-800 font-medium">✅ All orders have been delivered successfully!</p>
+                            <p className="text-green-800 font-medium">✅ Order completed successfully!</p>
+                            {order.assignedDroneId && (
+                                <p className="text-xs text-green-700 mt-1">
+                                    Delivered by {order.assignedDroneId?.name || 'Drone'}
+                                </p>
+                            )}
                         </div>
                     )}
                 </div>

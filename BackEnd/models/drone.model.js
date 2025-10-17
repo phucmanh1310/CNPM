@@ -13,7 +13,7 @@ const droneSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["Available", "Busy", "Maintenance"],
+        enum: ["Under Maintenance", "Busy", "Available"],
         default: "Available"
     },
     assignedOrderId: {

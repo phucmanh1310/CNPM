@@ -20,6 +20,7 @@ import ShopDetail from './pages/ShopDetail.jsx';
 import OrderPlaced from './pages/OrderPlaced.jsx';
 import MyOrders from './pages/MyOrders.jsx';
 import DroneManagement from './pages/DroneManagement.jsx';
+import PaymentSuccess from './pages/PaymentSuccess.jsx';
 
 export const serverURL = "http://localhost:8000";
 
@@ -46,6 +47,7 @@ function App() {
       <Route path="/order-placed" element={userData ? <OrderPlaced /> : <Navigate to="/signin" />} />
       <Route path="/my-orders" element={userData ? <MyOrders /> : <Navigate to="/signin" />} />
       <Route path="/drone-management" element={userData ? <DroneManagement /> : <Navigate to="/signin" />} />
+      <Route path="/payment/success" element={userData ? <PaymentSuccess /> : <Navigate to="/signin" />} />
 
     </Routes>
   );

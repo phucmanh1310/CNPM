@@ -24,7 +24,7 @@ const shopOrderSchema = new mongoose.Schema({
     subtotal: Number,
     status: {
         type: String,
-        enum: ["pending", "confirmed", "preparing", "prepared", "drone assigned", "out for delivery", "delivered", "cancelled"],
+        enum: ["pending", "accepted", "preparing", "prepared", "handed over to drone", "delivering", "delivered", "cancelled"],
         default: "pending"
     },
     cancelReason: {
@@ -44,8 +44,13 @@ const orderSchema = new mongoose.Schema({
     },
     paymentMethod: {
         type: String,
-        enum: ["cod", "online"],
+        enum: ["cod", "momo"],
         required: true,
+    },
+    paymentStatus: {
+        type: String,
+        enum: ["pending", "success", "failed", "cancelled"],
+        default: "pending"
     },
     deliveryAddress: {
         text: String,

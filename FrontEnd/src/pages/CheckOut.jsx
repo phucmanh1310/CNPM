@@ -207,17 +207,46 @@ function CheckOut() {
 
             console.log('Order placed successfully:', result.data)
 
-            // Clear cart after successful order
-            dispatch(clearCart());
+            // If payment method is MoMo, create payment and redirect
+            if (paymentMethod === 'momo') {
+                const totalAmount = subtotal + shippingFee;
+                const orderInfo = `Payment for ${result.data.totalOrders} order(s) - Total: ${totalAmount} VND`;
 
-            // Navigate to order placed page with order info
-            navigate("/order-placed", {
-                state: {
-                    orders: result.data.orders,
-                    totalOrders: result.data.totalOrders,
-                    message: result.data.message
+                // Create MoMo payment for the first order (assuming all orders have same total)
+                try {
+                    const paymentResult = await axios.post(`${serverURL}/api/payment/momo/create`, {
+                        orderId: result.data.orders[0]._id,
+                        amount: totalAmount,
+                        orderInfo: orderInfo
+                    }, { withCredentials: true });
+
+                    if (paymentResult.data.success) {
+                        // Clear cart before redirecting to MoMo
+                        dispatch(clearCart());
+
+                        // Save payment ID to localStorage for later retrieval
+                        localStorage.setItem('lastPaymentId', paymentResult.data.data.paymentId);
+
+                        // Redirect to MoMo payment page
+                        window.location.href = paymentResult.data.data.payUrl;
+                    } else {
+                        alert('Failed to create payment. Please try again.');
+                    }
+                } catch (paymentError) {
+                    console.error('Payment error:', paymentError.response?.data || paymentError);
+                    alert(`Payment error: ${paymentError.response?.data?.message || 'Unknown error'}`);
                 }
-            })
+            } else {
+                // COD payment - clear cart and navigate to success page
+                dispatch(clearCart());
+                navigate("/order-placed", {
+                    state: {
+                        orders: result.data.orders,
+                        totalOrders: result.data.totalOrders,
+                        message: result.data.message
+                    }
+                });
+            }
         } catch (error) {
             console.log('Error placing order:', error)
             alert('Failed to place order. Please try again.');
@@ -455,22 +484,18 @@ function CheckOut() {
                             </div>
 
                         </div>
-                        {/*Online payment*/}
+                        {/*MoMo payment*/}
                         <div className={`flex items-center gap-3 rounded-xl border p-4 text-left transition 
-                        ${paymentMethod === 'online' ? 'border-[#00BFFF] bg-blue-50 shadow'
+                        ${paymentMethod === 'momo' ? 'border-[#00BFFF] bg-blue-50 shadow'
                                 : 'border-gray-200 bg-white hover:border-gray-400'
                             }`}
-                            onClick={() => setPaymentMethod('online')}   >
-                            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
-                                <FaMobileScreenButton className='text-purple-600 text-xl' />
-                            </span>
-
-                            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-                                <FaCreditCard className='text-blue-600 text-xl' />
+                            onClick={() => setPaymentMethod('momo')}   >
+                            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+                                <FaMobileScreenButton className='text-red-600 text-xl' />
                             </span>
                             <div >
-                                <p className='font-medium text-gray-800'>UPI / Credit / Debit Card</p>
-                                <p className='text-sx text-gray-500'>Pay SecureLy Online</p>
+                                <p className='font-medium text-gray-800'>MoMo Payment</p>
+                                <p className='text-sx text-gray-500'>Pay Securely with MoMo</p>
                             </div>
 
                         </div>
@@ -512,7 +537,7 @@ function CheckOut() {
                 {/*Submit button*/}
                 <button className="w-full bg-[#00BFFF] text-white py-3 rounded-md font-semibold hover:bg-blue-600 transition"
                     onClick={handlePlaceOrder}>
-                    {paymentMethod == "cod" ? "Place Order" : "Pay & Place Order"}
+                    {paymentMethod == "cod" ? "Place Order" : "Pay with MoMo"}
                 </button>
             </div >
         </div >

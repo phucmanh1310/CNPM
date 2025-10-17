@@ -43,6 +43,7 @@ export const placeOrder = async (req, res) => {
             const order = await Order.create({
                 user: req.userId,
                 paymentMethod,
+                paymentStatus: paymentMethod === "cod" ? "success" : "pending", // COD is automatically successful
                 deliveryAddress,
                 totalAmount: subtotal,
                 shopOrder: [{
@@ -82,6 +83,7 @@ export const getUserOrders = async (req, res) => {
             .populate("shopOrder.shop", "name")
             .populate("shopOrder.owner", "name email mobile")
             .populate("shopOrder.shopOrderItems.item", "name image price")
+            .populate("assignedDroneId", "name status")
 
         return res.status(200).json(orders);
     } catch (error) {
@@ -125,12 +127,12 @@ export const updateOrderStatus = async (req, res) => {
 
         // Validate status transitions
         const validTransitions = {
-            "pending": ["confirmed", "cancelled"],
-            "confirmed": ["preparing", "cancelled"],
+            "pending": ["accepted", "cancelled"],
+            "accepted": ["preparing", "cancelled"],
             "preparing": ["prepared", "cancelled"],
-            "prepared": ["drone assigned"], // Only through drone assignment
-            "drone assigned": ["out for delivery"], // Auto-transition
-            "out for delivery": ["delivered"] // Only through customer confirmation
+            "prepared": ["handed over to drone"], // Only through drone assignment
+            "handed over to drone": ["delivering"], // Auto-transition
+            "delivering": ["delivered"] // Only through customer confirmation
         };
 
         if (!validTransitions[shopOrder.status]?.includes(status)) {
@@ -141,13 +143,13 @@ export const updateOrderStatus = async (req, res) => {
 
         shopOrder.status = status;
 
-        // Auto-transition from drone assigned to out for delivery
-        if (status === "drone assigned") {
+        // Auto-transition from handed over to drone to delivering
+        if (status === "handed over to drone") {
             setTimeout(async () => {
                 const updatedOrder = await Order.findById(orderId);
                 const updatedShopOrder = updatedOrder.shopOrder.id(shopOrderId);
-                if (updatedShopOrder.status === "drone assigned") {
-                    updatedShopOrder.status = "out for delivery";
+                if (updatedShopOrder.status === "handed over to drone") {
+                    updatedShopOrder.status = "delivering";
                     await updatedOrder.save();
                 }
             }, 1000); // 1 second delay to simulate drone pickup
@@ -181,9 +183,9 @@ export const confirmDelivery = async (req, res) => {
             return res.status(403).json({ message: "Not authorized to confirm this delivery" });
         }
 
-        // Check if order is in out for delivery status
-        if (shopOrder.status !== "out for delivery") {
-            return res.status(400).json({ message: "Can only confirm delivery for orders that are out for delivery" });
+        // Check if order is in delivering status
+        if (shopOrder.status !== "delivering") {
+            return res.status(400).json({ message: "Can only confirm delivery for orders that are delivering" });
         }
 
         // Update order status to delivered
@@ -201,6 +203,35 @@ export const confirmDelivery = async (req, res) => {
         return res.status(500).json({ message: `Confirm delivery error: ${error.message}` })
     }
 }
+
+// Fix stuck orders - manually transition from "handed over to drone" to "delivering"
+export const fixStuckOrders = async (req, res) => {
+    try {
+        // Find all orders with "handed over to drone" status
+        const stuckOrders = await Order.find({
+            "shopOrder.status": "handed over to drone"
+        });
+
+        let fixedCount = 0;
+
+        for (const order of stuckOrders) {
+            for (const shopOrder of order.shopOrder) {
+                if (shopOrder.status === "handed over to drone") {
+                    shopOrder.status = "delivering";
+                    fixedCount++;
+                }
+            }
+            await order.save();
+        }
+
+        return res.status(200).json({
+            message: `Fixed ${fixedCount} stuck orders`,
+            fixedCount: fixedCount
+        });
+    } catch (error) {
+        return res.status(500).json({ message: `Fix stuck orders error: ${error.message}` });
+    }
+};
 
 export const cancelOrder = async (req, res) => {
     try {

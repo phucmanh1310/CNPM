@@ -10,6 +10,7 @@ import shopRouter from "./routes/shop.routes.js";
 import itemRouter from "./routes/item.routes.js";
 import orderRouter from "./routes/order.routes.js";
 import droneRouter from "./routes/drone.routes.js";
+import paymentRouter from "./routes/payment.routes.js";
 const app = express();
 const PORT = process.env.PORT || 5000;
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
@@ -21,6 +22,7 @@ app.use("/api/shop", shopRouter);
 app.use("/api/item", itemRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/drone", droneRouter);
+app.use("/api/payment", paymentRouter);
 app.listen(PORT, () => {
   connectDB();
   console.log(`Server is running on port ${PORT}`);

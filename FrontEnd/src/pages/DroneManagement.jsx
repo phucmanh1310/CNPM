@@ -1,24 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { IoIosArrowRoundBack } from 'react-icons/io';
 import { FaPlane } from 'react-icons/fa';
 import useGetShopDrones from '../hooks/useGetShopDrones';
 import DroneCard from '../components/DroneCard';
-import AssignDroneModal from '../components/AssignDroneModal';
 import Toast from '../components/Toast';
 import axios from 'axios';
 import { serverURL } from '../App';
 
 function DroneManagement() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { myShopData } = useSelector(state => state.owner);
     const { drones, loading, error, refetch } = useGetShopDrones(myShopData?._id);
 
     const [updating, setUpdating] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
-    const [showAssignModal, setShowAssignModal] = useState(false);
-    const [selectedDrone, setSelectedDrone] = useState(null);
+    const [assignOrder, setAssignOrder] = useState(null);
+
+    // Get order info from navigation state
+    useEffect(() => {
+        if (location.state?.assignOrder) {
+            setAssignOrder(location.state.assignOrder);
+        }
+    }, [location.state]);
 
     const handleStatusUpdate = async (droneId, newStatus) => {
         try {
@@ -45,28 +51,96 @@ function DroneManagement() {
         }
     };
 
-    const handleAssignOrder = (drone) => {
-        setSelectedDrone(drone);
-        setShowAssignModal(true);
-    };
+    const handleResetAllDrones = async () => {
+        if (!window.confirm('Are you sure you want to reset all drones to Available status? This will clear all current assignments.')) {
+            return;
+        }
 
-    const handleAssignConfirm = async (droneId) => {
         try {
             setUpdating(true);
-            // This will be handled by the order management system
-            // For now, just close the modal
-            setShowAssignModal(false);
-            setSelectedDrone(null);
+            const response = await fetch(`${serverURL}/api/drone/resetAllDrones/${myShopData._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+
+            if (response.status === 200) {
+                setToast({
+                    show: true,
+                    message: `Successfully reset ${data.modifiedCount} drones to Available status`,
+                    type: 'success'
+                });
+                refetch(); // Refresh drone list
+            } else {
+                throw new Error(data.message || 'Failed to reset drones');
+            }
+        } catch (error) {
+            console.error('Error resetting drones:', error);
             setToast({
                 show: true,
-                message: 'Drone assignment will be handled in order management',
-                type: 'info'
+                message: error.message || 'Failed to reset drones',
+                type: 'error'
             });
+        } finally {
+            setUpdating(false);
+        }
+    };
+
+    const handleAssignOrder = async (drone) => {
+        if (!assignOrder) {
+            // Navigate to order management page where drone can be assigned to specific orders
+            navigate('/my-orders', { state: { assignDrone: drone } });
+            return;
+        }
+
+        // Assign drone to specific order
+        try {
+            setUpdating(true);
+            console.log('Assigning drone:', {
+                orderId: assignOrder.orderId,
+                shopOrderId: assignOrder.shopOrderId,
+                droneId: drone._id
+            });
+
+            const response = await fetch(`${serverURL}/api/drone/assignToOrder`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    orderId: assignOrder.orderId,
+                    shopOrderId: assignOrder.shopOrderId,
+                    droneId: drone._id
+                })
+            });
+
+            const data = await response.json();
+            console.log('Assign drone response:', data);
+
+            if (response.status === 200) {
+                setToast({
+                    show: true,
+                    message: `Drone ${drone.name} assigned to order successfully!`,
+                    type: 'success'
+                });
+
+                // Clear assign order and navigate back to orders
+                setTimeout(() => {
+                    navigate('/my-orders');
+                }, 2000);
+            } else {
+                throw new Error(data.message || 'Failed to assign drone');
+            }
         } catch (error) {
             console.error('Error assigning drone:', error);
             setToast({
                 show: true,
-                message: 'Failed to assign drone',
+                message: error.message || 'Failed to assign drone',
                 type: 'error'
             });
         } finally {
@@ -126,7 +200,7 @@ function DroneManagement() {
 
     const availableDrones = drones.filter(drone => drone.status === 'Available').length;
     const busyDrones = drones.filter(drone => drone.status === 'Busy').length;
-    const maintenanceDrones = drones.filter(drone => drone.status === 'Maintenance').length;
+    const maintenanceDrones = drones.filter(drone => drone.status === 'Under Maintenance').length;
 
     return (
         <div className="min-h-screen bg-[#fff9f6] pt-[100px] pb-[50px] px-4">
@@ -152,6 +226,41 @@ function DroneManagement() {
                     <p className="text-gray-600">{myShopData.address}, {myShopData.city}</p>
                 </div>
 
+                {/* Order Assignment Info */}
+                {assignOrder && (
+                    <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
+                        <div className="flex items-center gap-3 mb-3">
+                            <FaPlane className="text-indigo-600" size={20} />
+                            <h3 className="text-lg font-semibold text-indigo-800">Assign Drone to Order</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-sm text-gray-600">Order ID:</p>
+                                <p className="font-medium text-gray-800">#{assignOrder.orderId.slice(-8)}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Customer:</p>
+                                <p className="font-medium text-gray-800">{assignOrder.customerName}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Shop:</p>
+                                <p className="font-medium text-gray-800">{assignOrder.shopName}</p>
+                            </div>
+                            <div>
+                                <button
+                                    onClick={() => {
+                                        setAssignOrder(null);
+                                        navigate('/my-orders');
+                                    }}
+                                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm"
+                                >
+                                    Cancel Assignment
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Drone Statistics */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
@@ -168,6 +277,18 @@ function DroneManagement() {
                     </div>
                 </div>
 
+                {/* Reset All Drones Button */}
+                <div className="mb-6 text-center">
+                    <button
+                        onClick={handleResetAllDrones}
+                        disabled={updating}
+                        className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    >
+                        {updating ? 'Resetting...' : 'Reset All Drones to Available'}
+                    </button>
+                    <p className="text-xs text-gray-500 mt-2">This will clear all current drone assignments</p>
+                </div>
+
                 {/* Drones Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {drones.map((drone) => (
@@ -176,26 +297,10 @@ function DroneManagement() {
                             drone={drone}
                             onStatusUpdate={handleStatusUpdate}
                             onAssignOrder={handleAssignOrder}
+                            assignOrder={assignOrder}
                         />
                     ))}
                 </div>
-
-                {/* Assign Drone Modal */}
-                <AssignDroneModal
-                    isOpen={showAssignModal}
-                    onClose={() => {
-                        setShowAssignModal(false);
-                        setSelectedDrone(null);
-                    }}
-                    onConfirm={handleAssignConfirm}
-                    drones={drones}
-                    orderInfo={{
-                        orderId: 'sample-order-id',
-                        shopName: myShopData.name,
-                        customerName: 'Sample Customer'
-                    }}
-                    loading={updating}
-                />
 
                 {/* Toast */}
                 <Toast

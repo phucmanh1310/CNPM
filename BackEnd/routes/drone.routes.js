@@ -4,7 +4,8 @@ import {
     getShopDrones,
     updateDroneStatus,
     assignDroneToOrder,
-    releaseDrone
+    releaseDrone,
+    resetAllDrones
 } from "../controllers/drone.controller.js";
 
 const droneRouter = express.Router();
@@ -20,5 +21,8 @@ droneRouter.put("/assignToOrder", isAuth, assignDroneToOrder);
 
 // Release drone manually (for emergency cases)
 droneRouter.put("/releaseDrone/:droneId", isAuth, releaseDrone);
+
+// Reset all drones to Available status (for testing)
+droneRouter.put("/resetAllDrones/:shopId", isAuth, resetAllDrones);
 
 export default droneRouter;

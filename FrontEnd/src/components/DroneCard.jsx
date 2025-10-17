@@ -1,12 +1,12 @@
 import React from 'react';
 import { FaPlane, FaCog, FaCheckCircle, FaClock } from 'react-icons/fa';
 
-function DroneCard({ drone, onStatusUpdate, onAssignOrder }) {
+function DroneCard({ drone, onStatusUpdate, onAssignOrder, assignOrder = null }) {
     const getStatusColor = (status) => {
         switch (status) {
             case 'Available': return 'bg-green-100 text-green-800 border-green-200';
             case 'Busy': return 'bg-blue-100 text-blue-800 border-blue-200';
-            case 'Maintenance': return 'bg-red-100 text-red-800 border-red-200';
+            case 'Under Maintenance': return 'bg-red-100 text-red-800 border-red-200';
             default: return 'bg-gray-100 text-gray-800 border-gray-200';
         }
     };
@@ -15,7 +15,7 @@ function DroneCard({ drone, onStatusUpdate, onAssignOrder }) {
         switch (status) {
             case 'Available': return <FaCheckCircle className="text-green-600" />;
             case 'Busy': return <FaClock className="text-blue-600" />;
-            case 'Maintenance': return <FaCog className="text-red-600" />;
+            case 'Under Maintenance': return <FaCog className="text-red-600" />;
             default: return <FaPlane className="text-gray-600" />;
         }
     };
@@ -52,7 +52,7 @@ function DroneCard({ drone, onStatusUpdate, onAssignOrder }) {
                 </div>
             )}
 
-            {drone.status === 'Maintenance' && drone.maintenanceReason && (
+            {drone.status === 'Under Maintenance' && drone.maintenanceReason && (
                 <div className="mb-3 p-2 bg-red-50 rounded-lg">
                     <p className="text-sm text-red-700">
                         <strong>Reason:</strong> {drone.maintenanceReason}
@@ -63,14 +63,14 @@ function DroneCard({ drone, onStatusUpdate, onAssignOrder }) {
             <div className="flex gap-2">
                 {drone.status === 'Available' && (
                     <button
-                        onClick={() => onStatusUpdate(drone._id, 'Maintenance')}
+                        onClick={() => onStatusUpdate(drone._id, 'Under Maintenance')}
                         className="flex-1 px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
                     >
                         Set Maintenance
                     </button>
                 )}
 
-                {drone.status === 'Maintenance' && (
+                {drone.status === 'Under Maintenance' && (
                     <button
                         onClick={() => onStatusUpdate(drone._id, 'Available')}
                         className="flex-1 px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium"
@@ -84,8 +84,14 @@ function DroneCard({ drone, onStatusUpdate, onAssignOrder }) {
                         onClick={() => onAssignOrder(drone)}
                         className="flex-1 px-3 py-2 bg-[#00BFFF] text-white rounded-lg hover:bg-[#0090cc] transition-colors text-sm font-medium"
                     >
-                        Assign Order
+                        {assignOrder ? 'Assign to Order' : 'Assign Order'}
                     </button>
+                )}
+
+                {drone.status === 'Busy' && (
+                    <div className="flex-1 px-3 py-2 bg-gray-300 text-gray-600 rounded-lg text-sm font-medium text-center">
+                        Currently Busy
+                    </div>
                 )}
             </div>
         </div>
