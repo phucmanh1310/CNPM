@@ -7,9 +7,10 @@ const userSchema = new mongoose.Schema(
     mobile: { type: String, required: true },
     role: {
       type: String,
-      enum: ["user", "owner", "deliveryBoy"],
+      enum: ["user", "owner", "admin"],
       required: true,
     },
+    isActive: { type: Boolean, default: true },
   },
 
   { timestamps: true }

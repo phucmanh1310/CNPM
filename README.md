@@ -97,14 +97,38 @@
 
 ## Chạy ứng dụng
 
+### Tạo Admin User đầu tiên
+
+Trước khi chạy ứng dụng, bạn cần tạo tài khoản admin đầu tiên:
+
+```bash
+cd BackEnd
+node scripts/createAdminUser.js
+```
+
+### Truy cập ứng dụng
+
 Truy cập ứng dụng trên trình duyệt: `http://localhost:5173`
+
+### Các tài khoản Demo
+
+**Admin Account:**
+- Email: `admin@gmail.com`
+- Password: `admin`
+- Truy cập: `http://localhost:5173/admin-login`
+
+**User Accounts:**
+- Email: `manhgamer1013@gmail.com` | Password: `123456`
+- Email: `phucmanhtran08@gmail.com` | Password: `123456`  
+- Email: `test@gmail.com` | Password: `manhtran11`
+
 
 ## Các điểm cuối API
 
 *   `GET /api/items`: Lấy danh sách các sản phẩm.
 *   `POST /api/users/register`: Đăng ký người dùng mới.
 *   `POST /api/users/login`: Đăng nhập người dùng.
-
+*   `...`
 ## Kiểm thử
 
 (Hướng dẫn kiểm thử sẽ được thêm vào sau)

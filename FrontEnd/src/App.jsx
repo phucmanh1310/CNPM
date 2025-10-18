@@ -21,6 +21,8 @@ import OrderPlaced from './pages/OrderPlaced.jsx';
 import MyOrders from './pages/MyOrders.jsx';
 import DroneManagement from './pages/DroneManagement.jsx';
 import PaymentSuccess from './pages/PaymentSuccess.jsx';
+import AdminLogin from './pages/AdminLogin.jsx';
+import AdminDashboard from './pages/AdminDashboard.jsx';
 
 export const serverURL = "http://localhost:8000";
 
@@ -48,6 +50,10 @@ function App() {
       <Route path="/my-orders" element={userData ? <MyOrders /> : <Navigate to="/signin" />} />
       <Route path="/drone-management" element={userData ? <DroneManagement /> : <Navigate to="/signin" />} />
       <Route path="/payment/success" element={userData ? <PaymentSuccess /> : <Navigate to="/signin" />} />
+
+      {/* Admin Routes */}
+      <Route path="/admin-login" element={!userData ? <AdminLogin /> : <Navigate to="/admin" />} />
+      <Route path="/admin" element={userData && userData.role === "admin" ? <AdminDashboard /> : <Navigate to="/admin-login" />} />
 
     </Routes>
   );

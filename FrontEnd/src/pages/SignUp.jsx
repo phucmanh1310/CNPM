@@ -276,8 +276,7 @@ function SignUp() {
           <div className="flex gap-2">
             {[
               { value: "user", label: "Customer" },
-              { value: "owner", label: "Owner" },
-              { value: "deliveryBoy", label: "Delivery" }
+              { value: "owner", label: "Owner" }
             ].map((r) => (
               <button
                 key={r.value}

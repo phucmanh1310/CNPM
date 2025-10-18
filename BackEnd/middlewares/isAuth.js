@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken";
-const isAuth = (req, res, next) => {
+import User from "../models/user.model.js";
+
+const isAuth = async (req, res, next) => {
   try {
     const token = req.cookies.token;
     if (!token) {
@@ -9,6 +11,16 @@ const isAuth = (req, res, next) => {
     if (!decodedToken) {
       return res.status(400).json({ message: "token not veriffy" });
     }
+
+    // Check if user exists and is active
+    const user = await User.findById(decodedToken.userId);
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+    if (user.isActive === false) {
+      return res.status(403).json({ message: "Account has been banned" });
+    }
+
     console.log(decodedToken);
     req.userId = decodedToken.userId;
     next();

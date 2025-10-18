@@ -64,7 +64,9 @@ function SignIn() {
       setLoading(false);
 
       // ✅ Navigate dựa trên role
-      if (result.data.user.role === "owner") {
+      if (result.data.user.role === "admin") {
+        navigate("/admin", { replace: true });
+      } else if (result.data.user.role === "owner") {
         navigate("/owner", { replace: true });
       } else {
         navigate("/user", { replace: true });

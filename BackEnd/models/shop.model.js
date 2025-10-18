@@ -29,7 +29,8 @@ const shopSchema = new mongoose.Schema({
     item: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Item"
-    }]
+    }],
+    isActive: { type: Boolean, default: true }
 }, { timestamps: true })
 const Shop = mongoose.model("Shop", shopSchema);
 export default Shop;
