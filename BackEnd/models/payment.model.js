@@ -6,6 +6,15 @@ const paymentSchema = new mongoose.Schema({
         ref: "Order",
         required: true,
     },
+    // For multi-order payments, store all order IDs
+    orders: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Order"
+    }],
+    sessionId: {
+        type: String,
+        default: null
+    },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",

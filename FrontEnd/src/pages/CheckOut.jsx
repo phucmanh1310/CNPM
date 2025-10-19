@@ -209,13 +209,14 @@ function CheckOut() {
 
             // If payment method is MoMo, create payment and redirect
             if (paymentMethod === 'momo') {
-                const totalAmount = subtotal + shippingFee;
+                const totalAmount = result.data.totalAmount + shippingFee;
                 const orderInfo = `Payment for ${result.data.totalOrders} order(s) - Total: ${totalAmount} VND`;
 
-                // Create MoMo payment for the first order (assuming all orders have same total)
+                // Create MoMo payment for all orders in the session
                 try {
                     const paymentResult = await axios.post(`${serverURL}/api/payment/momo/create`, {
-                        orderId: result.data.orders[0]._id,
+                        orderIds: result.data.orders.map(order => order._id), // Pass all order IDs
+                        sessionId: result.data.sessionId,
                         amount: totalAmount,
                         orderInfo: orderInfo
                     }, { withCredentials: true });

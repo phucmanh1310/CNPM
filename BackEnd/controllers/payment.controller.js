@@ -8,41 +8,77 @@ import { MOMO_CONFIG, generateSignature } from '../config/momo.js';
 // Create MoMo payment
 export const createMoMoPayment = async (req, res) => {
     try {
-        const { orderId } = req.body;
+        const { orderIds, sessionId, amount, orderInfo } = req.body;
         const userId = req.userId;
 
-        // Find order
-        const order = await Order.findById(orderId).populate('user');
-        if (!order) {
-            return res.status(404).json({
-                success: false,
-                message: "Order not found"
-            });
-        }
+        // Handle both single order (legacy) and multi-order payments
+        let orders, totalAmount, paymentOrderInfo;
 
-        // Check if order belongs to user
-        if (order.user._id.toString() !== userId) {
-            return res.status(403).json({
-                success: false,
-                message: "Access denied"
-            });
-        }
+        if (orderIds && Array.isArray(orderIds)) {
+            // Multi-order payment
+            orders = await Order.find({ _id: { $in: orderIds } }).populate('user');
+            if (orders.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Orders not found"
+                });
+            }
 
-        // Check if order is already paid
-        if (order.paymentStatus === "success") {
-            return res.status(400).json({
-                success: false,
-                message: "Order already paid"
-            });
-        }
+            // Check if all orders belong to user
+            const invalidOrders = orders.filter(order => order.user._id.toString() !== userId);
+            if (invalidOrders.length > 0) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Access denied to some orders"
+                });
+            }
 
-        const amount = order.totalAmount;
-        const orderInfo = `Payment for order ${orderId} - Total: ${amount} VND`;
+            // Check if any order is already paid
+            const paidOrders = orders.filter(order => order.paymentStatus === "success");
+            if (paidOrders.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Some orders are already paid"
+                });
+            }
+
+            totalAmount = amount || orders.reduce((sum, order) => sum + order.totalAmount, 0);
+            paymentOrderInfo = orderInfo || `Payment for ${orders.length} order(s) - Total: ${totalAmount} VND`;
+        } else {
+            // Legacy single order payment
+            const { orderId } = req.body;
+            const order = await Order.findById(orderId).populate('user');
+            if (!order) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Order not found"
+                });
+            }
+
+            if (order.user._id.toString() !== userId) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Access denied"
+                });
+            }
+
+            if (order.paymentStatus === "success") {
+                return res.status(400).json({
+                    success: false,
+                    message: "Order already paid"
+                });
+            }
+
+            orders = [order];
+            totalAmount = order.totalAmount;
+            paymentOrderInfo = `Payment for order ${orderId} - Total: ${totalAmount} VND`;
+        }
 
         // Generate unique MoMo order ID
         const timestamp = Date.now();
         const randomSuffix = Math.random().toString(36).substring(2, 8);
-        const momoOrderId = `${MOMO_CONFIG.PARTNER_CODE}_${orderId}_${timestamp}_${randomSuffix}`;
+        const primaryOrderId = orders[0]._id; // Use first order ID for MoMo order ID
+        const momoOrderId = `${MOMO_CONFIG.PARTNER_CODE}_${primaryOrderId}_${timestamp}_${randomSuffix}`;
         const requestId = momoOrderId;
 
         // Prepare MoMo payment data - Following working sample format
@@ -53,11 +89,11 @@ export const createMoMoPayment = async (req, res) => {
 
         // Generate signature BEFORE creating request body
         const rawSignature = "accessKey=" + MOMO_CONFIG.ACCESS_KEY +
-            "&amount=" + amount +
+            "&amount=" + totalAmount +
             "&extraData=" + extraData +
             "&ipnUrl=" + MOMO_CONFIG.NOTIFY_URL +
             "&orderId=" + momoOrderId +
-            "&orderInfo=" + orderInfo +
+            "&orderInfo=" + paymentOrderInfo +
             "&partnerCode=" + MOMO_CONFIG.PARTNER_CODE +
             "&redirectUrl=" + MOMO_CONFIG.RETURN_URL +
             "&requestId=" + requestId +
@@ -77,9 +113,9 @@ export const createMoMoPayment = async (req, res) => {
             partnerName: "Test",
             storeId: "MomoTestStore",
             requestId: requestId,
-            amount: amount,
+            amount: totalAmount,
             orderId: momoOrderId,
-            orderInfo: orderInfo,
+            orderInfo: paymentOrderInfo,
             redirectUrl: MOMO_CONFIG.RETURN_URL,
             ipnUrl: MOMO_CONFIG.NOTIFY_URL,
             lang: lang,
@@ -92,10 +128,12 @@ export const createMoMoPayment = async (req, res) => {
 
         // Create payment record
         const payment = new Payment({
-            order: orderId,
+            order: orders[0]._id, // Primary order for backward compatibility
+            orders: orders.map(order => order._id), // All orders in this payment
+            sessionId: sessionId,
             user: userId,
             paymentMethod: "momo",
-            amount: amount,
+            amount: totalAmount,
             paymentStatus: "pending",
             momoOrderId: momoOrderId,
             momoResponse: paymentData
@@ -103,9 +141,11 @@ export const createMoMoPayment = async (req, res) => {
 
         await payment.save();
 
-        // Update order payment status
-        order.paymentStatus = "pending";
-        await order.save();
+        // Update all orders payment status
+        for (const order of orders) {
+            order.paymentStatus = "pending";
+            await order.save();
+        }
 
         // Make request to MoMo using HTTPS (following working sample)
         const requestBody = JSON.stringify(paymentData);
@@ -142,9 +182,11 @@ export const createMoMoPayment = async (req, res) => {
                     payment.paidAt = new Date();
                     await payment.save();
 
-                    // Update order status
-                    order.paymentStatus = "success";
-                    await order.save();
+                    // Update all orders status
+                    for (const order of orders) {
+                        order.paymentStatus = "success";
+                        await order.save();
+                    }
 
                     res.json({
                         success: true,
@@ -152,7 +194,7 @@ export const createMoMoPayment = async (req, res) => {
                         data: {
                             payUrl: momoResponse.payUrl,
                             paymentId: payment._id,
-                            orderId: orderId
+                            orderIds: orders.map(order => order._id)
                         }
                     });
                 } else {
@@ -162,8 +204,11 @@ export const createMoMoPayment = async (req, res) => {
                     payment.momoResponse = momoResponse;
                     await payment.save();
 
-                    order.paymentStatus = "failed";
-                    await order.save();
+                    // Update all orders status
+                    for (const order of orders) {
+                        order.paymentStatus = "failed";
+                        await order.save();
+                    }
 
                     console.error("MoMo payment creation failed:", momoResponse);
                     res.status(400).json({
@@ -249,7 +294,7 @@ export const handleMoMoCallback = async (req, res) => {
         }
 
         // Find payment by MoMo order ID
-        const payment = await Payment.findOne({ momoOrderId: orderId }).populate('order');
+        const payment = await Payment.findOne({ momoOrderId: orderId }).populate('orders');
         if (!payment) {
             return res.status(404).json({
                 success: false,
@@ -282,12 +327,14 @@ export const handleMoMoCallback = async (req, res) => {
 
         await payment.save();
 
-        // Update order
-        payment.order.paymentStatus = newStatus;
-        await payment.order.save();
+        // Update all orders in the payment
+        for (const order of payment.orders) {
+            order.paymentStatus = newStatus;
+            await order.save();
+        }
 
         console.log(`✅ Payment ${payment._id} updated to ${newStatus} (resultCode: ${resultCode})`);
-        console.log(`✅ Order ${payment.order._id} updated to ${newStatus}`);
+        console.log(`✅ ${payment.orders.length} orders updated to ${newStatus}`);
 
         if (newStatus === "success") {
             res.json({
@@ -328,7 +375,7 @@ export const testCallback = async (req, res) => {
         console.log('Result Code:', resultCode);
 
         // Find payment by MoMo order ID
-        const payment = await Payment.findOne({ momoOrderId }).populate('order');
+        const payment = await Payment.findOne({ momoOrderId }).populate('orders');
         if (!payment) {
             return res.status(404).json({
                 success: false,
@@ -345,9 +392,11 @@ export const testCallback = async (req, res) => {
         }
         await payment.save();
 
-        // Update order status
-        payment.order.paymentStatus = payment.paymentStatus;
-        await payment.order.save();
+        // Update all orders status
+        for (const order of payment.orders) {
+            order.paymentStatus = payment.paymentStatus;
+            await order.save();
+        }
 
         console.log(`✅ Payment ${payment._id} updated to ${payment.paymentStatus}`);
 

@@ -28,6 +28,9 @@ export const placeOrder = async (req, res) => {
             groupItemsByShop[shopId].push(item)
         });
 
+        // Generate session ID for grouping orders from same checkout session
+        const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+
         // Create separate order for each shop
         const createdOrders = []
         for (const shopId of Object.keys(groupItemsByShop)) {
@@ -46,6 +49,7 @@ export const placeOrder = async (req, res) => {
                 paymentStatus: paymentMethod === "cod" ? "success" : "pending", // COD is automatically successful
                 deliveryAddress,
                 totalAmount: subtotal,
+                sessionId: sessionId, // Group orders from same checkout session
                 shopOrder: [{
                     shop: shop._id,
                     owner: shop.owner._id,
@@ -67,7 +71,9 @@ export const placeOrder = async (req, res) => {
         return res.status(201).json({
             message: "Orders placed successfully",
             orders: createdOrders,
-            totalOrders: createdOrders.length
+            totalOrders: createdOrders.length,
+            sessionId: sessionId,
+            totalAmount: createdOrders.reduce((sum, order) => sum + order.totalAmount, 0)
         })
 
     } catch (error) {

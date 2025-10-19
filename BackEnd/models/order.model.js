@@ -63,6 +63,12 @@ const orderSchema = new mongoose.Schema({
 
     shopOrder: [shopOrderSchema],
 
+    // Session grouping for multi-order payments
+    sessionId: {
+        type: String,
+        default: null
+    },
+
     // Drone assignment fields
     assignedDroneId: {
         type: mongoose.Schema.Types.ObjectId,
