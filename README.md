@@ -3,6 +3,7 @@
 ## Thành viên của dự án
 
 1.  Trần Nguyễn Phúc Mạnh | ID:3122411121
+2. Nguyễn Vũ Quang Minh | ID: 3122411126
 ## Mục lục
 
 1.  [Mô tả dự án](#mô-tả-dự-án)
