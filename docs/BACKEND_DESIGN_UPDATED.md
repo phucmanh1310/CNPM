@@ -485,3 +485,4 @@ Thiết kế backend này đảm bảo:
 - ✅ **Reliability**: Error handling và logging đầy đủ
 
 Hệ thống được thiết kế theo chuẩn RESTful API và tuân thủ các nguyên tắc thiết kế database quan hệ, đảm bảo tính toàn vẹn dữ liệu và hiệu suất cao.
+
