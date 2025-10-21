@@ -1,75 +1,75 @@
-import React from "react";
-import { IoMdArrowRoundBack } from "react-icons/io";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { serverURL } from "../App";
-import { } from "react-spinners";
+import React from 'react'
+import { IoMdArrowRoundBack } from 'react-icons/io'
+import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
+import { serverURL } from '../App'
+import {} from 'react-spinners'
 
 function ForgotPassword() {
-  const [step, setStep] = React.useState(1);
-  const [email, setEmail] = React.useState("");
-  const [otp, setOtp] = React.useState("");
-  const navigate = useNavigate();
-  const [newPassword, setNewPassword] = React.useState("");
-  const [confirmPassword, setConfirmPassword] = React.useState("");
-  const [err, setErr] = React.useState("");
-  const [loading, setLoading] = React.useState(false);
+  const [step, setStep] = React.useState(1)
+  const [email, setEmail] = React.useState('')
+  const [otp, setOtp] = React.useState('')
+  const navigate = useNavigate()
+  const [newPassword, setNewPassword] = React.useState('')
+  const [confirmPassword, setConfirmPassword] = React.useState('')
+  const [err, setErr] = React.useState('')
+  const [loading, setLoading] = React.useState(false)
   const handleSendOtp = async () => {
     try {
-      setLoading(true);
+      setLoading(true)
       const result = await axios.post(
         `${serverURL}/api/auth/send-otp`,
         { email },
         { withCredentials: true }
-      );
-      console.log(result);
-      setErr("");
-      setStep(2);
-      setLoading(false);
+      )
+      console.log(result)
+      setErr('')
+      setStep(2)
+      setLoading(false)
     } catch (error) {
-      setErr(error?.response?.data?.message);
-      setLoading(false);
+      setErr(error?.response?.data?.message)
+      setLoading(false)
     }
-  };
+  }
 
   const handleVerifyOtp = async () => {
     try {
-      setLoading(true);
+      setLoading(true)
       const result = await axios.post(
         `${serverURL}/api/auth/verify-otp`,
         { email, otp },
         { withCredentials: true }
-      );
-      console.log(result);
-      setErr("");
-      setStep(3);
-      setLoading(false);
+      )
+      console.log(result)
+      setErr('')
+      setStep(3)
+      setLoading(false)
     } catch (error) {
-      setErr(error?.response?.data?.message);
-      setLoading(false);
+      setErr(error?.response?.data?.message)
+      setLoading(false)
     }
-  };
+  }
 
   const handleResetPassword = async () => {
     try {
-      setLoading(true);
+      setLoading(true)
       if (newPassword != confirmPassword) {
-        return null;
+        return null
       }
       const result = await axios.post(
         `${serverURL}/api/auth/reset-password`,
         { email, newPassword },
         { withCredentials: true }
-      );
-      setErr("");
-      console.log(result);
-      setLoading(false);
-      navigate("/signin");
+      )
+      setErr('')
+      console.log(result)
+      setLoading(false)
+      navigate('/signin')
     } catch (error) {
-      setErr(error?.response?.data?.message);
-      setLoading(false);
+      setErr(error?.response?.data?.message)
+      setLoading(false)
     }
-  };
+  }
   return (
     <div className="flex w-full items-center justify-center min-h-screen pg-4 bg-[#fff9f6]">
       <div className="bg-white rounded-x1 shadow-lg w-full max-w-md p-8">
@@ -77,12 +77,12 @@ function ForgotPassword() {
           <IoMdArrowRoundBack
             size={30}
             className=" cursor-pointer"
-            style={{ color: "#00BFFF" }}
-            onClick={() => navigate("/signin")}
+            style={{ color: '#00BFFF' }}
+            onClick={() => navigate('/signin')}
           />
           <h1
             className="text-3xl font-bold text-center "
-            style={{ color: "#00BFFF" }}
+            style={{ color: '#00BFFF' }}
           >
             Forgot Password
           </h1>
@@ -107,12 +107,12 @@ function ForgotPassword() {
             </div>
             <button
               className={
-                "w-full font-semibold py-2 rounded-lg transition duration-200 bg-[#00BFFF] text-white hover:bg-[#00BFFF] cursor-pointer"
+                'w-full font-semibold py-2 rounded-lg transition duration-200 bg-[#00BFFF] text-white hover:bg-[#00BFFF] cursor-pointer'
               }
               onClick={handleSendOtp}
               disabled={loading}
             >
-              {loading ? <ClipLoader color="white" size={20} /> : "Send OTP"}
+              {loading ? <ClipLoader color="white" size={20} /> : 'Send OTP'}
             </button>
           </div>
         )}
@@ -136,12 +136,12 @@ function ForgotPassword() {
             </div>
             <button
               className={
-                "w-full font-semibold py-2 rounded-lg transition duration-200 bg-[#00BFFF] text-white hover:bg-[#00BFFF] cursor-pointer"
+                'w-full font-semibold py-2 rounded-lg transition duration-200 bg-[#00BFFF] text-white hover:bg-[#00BFFF] cursor-pointer'
               }
               onClick={handleVerifyOtp}
               disabled={loading}
             >
-              {loading ? <ClipLoader color="white" size={20} /> : "Verify OTP"}
+              {loading ? <ClipLoader color="white" size={20} /> : 'Verify OTP'}
             </button>
             <p className="text-red-500 text-center my-[10px]">*{err}</p>
           </div>
@@ -182,7 +182,7 @@ function ForgotPassword() {
             </div>
             <button
               className={
-                "w-full font-semibold py-2 rounded-lg transition duration-200 bg-[#00BFFF] text-white hover:bg-[#00BFFF] cursor-pointer"
+                'w-full font-semibold py-2 rounded-lg transition duration-200 bg-[#00BFFF] text-white hover:bg-[#00BFFF] cursor-pointer'
               }
               onClick={handleResetPassword}
               disabled={loading}
@@ -190,7 +190,7 @@ function ForgotPassword() {
               {loading ? (
                 <ClipLoader color="white" size={20} />
               ) : (
-                "Reset Password"
+                'Reset Password'
               )}
             </button>
             <p className="text-red-500 text-center my-[10px]">*{err}</p>
@@ -198,7 +198,7 @@ function ForgotPassword() {
         )}
       </div>
     </div>
-  );
+  )
 }
 
-export default ForgotPassword;
+export default ForgotPassword

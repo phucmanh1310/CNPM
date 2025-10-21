@@ -1,33 +1,32 @@
-import React from "react";
-import { useState } from "react";
-import { FaRegEye } from "react-icons/fa";
-import { FaRegEyeSlash } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
-import { useNavigate } from "react-router-dom";
-import { serverURL } from "../App"; // Import từ App.js
+import React from 'react'
+import { useState } from 'react'
+import { FaRegEye } from 'react-icons/fa'
+import { FaRegEyeSlash } from 'react-icons/fa'
+import { FcGoogle } from 'react-icons/fc'
+import { useNavigate } from 'react-router-dom'
+import { serverURL } from '../App' // Import từ App.js
 // import authRouter from "./routes/auth.routes.js";
-import { } from "react-spinners";
-import axios from "axios";
-import { useDispatch } from "react-redux";
-import { setUserData } from "../redux/userSlice"; // Adjust the path as needed
-import { ClipLoader } from 'react-spinners';
-
+import {} from 'react-spinners'
+import axios from 'axios'
+import { useDispatch } from 'react-redux'
+import { setUserData } from '../redux/userSlice' // Adjust the path as needed
+import { ClipLoader } from 'react-spinners'
 
 function SignIn() {
-  const primaryColor = "#00BFFF";
+  const primaryColor = '#00BFFF'
   //   const hoverColor = "#e64323";
-  const bgcolor = "#fff9f6";
-  const borderColor = "#ddd";
-  const [showPassword, setShowPassword] = useState(false);
+  const bgcolor = '#fff9f6'
+  const borderColor = '#ddd'
+  const [showPassword, setShowPassword] = useState(false)
 
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('')
 
-  const [password, setPassword] = useState("");
-  const [err, setErr] = useState("");
-  const dispatch = useDispatch();
-  const [loading, setLoading] = useState(false);
+  const [password, setPassword] = useState('')
+  const [err, setErr] = useState('')
+  const dispatch = useDispatch()
+  const [loading, setLoading] = useState(false)
 
   // const handleSignIn = async () => {
   //   setLoading(true);
@@ -48,35 +47,34 @@ function SignIn() {
   //   }
   // };
   const handleSignIn = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
       const result = await axios.post(
         `${serverURL}/api/auth/signin`,
         { email, password },
         { withCredentials: true }
-      );
+      )
 
       // ✅ Dispatch dữ liệu user vào Redux
-      dispatch(setUserData(result.data.user)); // Chú ý: result.data.user, không phải result.data
+      dispatch(setUserData(result.data.user)) // Chú ý: result.data.user, không phải result.data
 
-      console.log("Signin success:", result.data);
-      setErr("");
-      setLoading(false);
+      console.log('Signin success:', result.data)
+      setErr('')
+      setLoading(false)
 
       // ✅ Navigate dựa trên role
-      if (result.data.user.role === "admin") {
-        navigate("/admin", { replace: true });
-      } else if (result.data.user.role === "owner") {
-        navigate("/owner", { replace: true });
+      if (result.data.user.role === 'admin') {
+        navigate('/admin', { replace: true })
+      } else if (result.data.user.role === 'owner') {
+        navigate('/owner', { replace: true })
       } else {
-        navigate("/user", { replace: true });
+        navigate('/user', { replace: true })
       }
-
     } catch (error) {
-      setErr(error?.response?.data?.message);
-      setLoading(false);
+      setErr(error?.response?.data?.message)
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div
@@ -106,7 +104,7 @@ function SignIn() {
             type="email"
             className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500"
             placeholder="Enter your Email"
-            style={{ border: "1px solid ${borderColor}" }}
+            style={{ border: '1px solid ${borderColor}' }}
             onChange={(e) => setEmail(e.target.value)}
             value={email}
             required
@@ -123,10 +121,10 @@ function SignIn() {
           </label>
           <div className="relative">
             <input
-              type={showPassword ? "text" : "password"}
+              type={showPassword ? 'text' : 'password'}
               className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500"
               placeholder="Enter your Password"
-              style={{ border: "1px solid ${borderColor}" }}
+              style={{ border: '1px solid ${borderColor}' }}
               onChange={(e) => setPassword(e.target.value)}
               value={password}
               required
@@ -142,30 +140,33 @@ function SignIn() {
         </div>
         <div
           className="text-right mb-4 text-[#00BFFF] font-medium cursor-pointer"
-          onClick={() => navigate("/forgot-password")}
+          onClick={() => navigate('/forgot-password')}
         >
           Forgot Password?
         </div>
         <button
           className={
-            "w-full font-semibold py-2 rounded-lg transition duration-200 bg-[#00BFFF] text-white hover:bg-[#00BFFF] cursor-pointer"
+            'w-full font-semibold py-2 rounded-lg transition duration-200 bg-[#00BFFF] text-white hover:bg-[#00BFFF] cursor-pointer'
           }
           onClick={handleSignIn}
           disabled={loading}
         >
-          {loading ? <ClipLoader color="white" size={20} /> : "Sign In"}
+          {loading ? <ClipLoader color="white" size={20} /> : 'Sign In'}
         </button>
         <p className="text-red-500 text-center my-[10px]">*{err}</p>
         <p
           className="text-center mt-2 cursor-pointer"
-          onClick={() => navigate("/signup")}
+          onClick={() => navigate('/signup')}
         >
-          Already have an account ?{" "}
-          <span className="text-[#00BFFF]"> Want to create a new account?</span>{" "}
+          Already have an account ?{' '}
+          <span className="text-[#00BFFF]">
+            {' '}
+            Want to create a new account?
+          </span>{' '}
         </p>
       </div>
     </div>
-  );
+  )
 }
 
-export default SignIn;
+export default SignIn

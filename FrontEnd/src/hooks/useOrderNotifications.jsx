@@ -1,32 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import axios from 'axios';
-import { serverURL } from '../App';
+import React, { useState } from 'react'
 
 function useOrderNotifications() {
-    const { userData } = useSelector(state => state.user);
-    const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState([])
 
-    const addNotification = (message, type = 'info') => {
-        const notification = {
-            id: Date.now(),
-            message,
-            type,
-            timestamp: new Date()
-        };
-        setNotifications(prev => [...prev, notification]);
+  const addNotification = (message, type = 'info') => {
+    const notification = {
+      id: Date.now(),
+      message,
+      type,
+      timestamp: new Date(),
+    }
+    setNotifications((prev) => [...prev, notification])
 
-        // Auto remove after 5 seconds
-        setTimeout(() => {
-            setNotifications(prev => prev.filter(n => n.id !== notification.id));
-        }, 5000);
-    };
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      setNotifications((prev) => prev.filter((n) => n.id !== notification.id))
+    }, 5000)
+  }
 
-    const removeNotification = (id) => {
-        setNotifications(prev => prev.filter(n => n.id !== id));
-    };
+  const removeNotification = (id) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id))
+  }
 
-    return { notifications, addNotification, removeNotification };
+  return { notifications, addNotification, removeNotification }
 }
 
-export default useOrderNotifications;
+export default useOrderNotifications
