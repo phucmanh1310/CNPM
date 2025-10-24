@@ -1,0 +1,487 @@
+# Deployment Guide - KTPM E-commerce Application
+
+## 1. Tổng quan Deployment
+
+### 1.1 Kiến trúc Deployment
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Load Balancer │───▶│    Frontend     │    │    Backend      │
+│   (Nginx/ALB)   │    │   (React/Nginx) │◄──▶│   (Node.js)     │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                                │                       │
+                                ▼                       ▼
+                       ┌─────────────────┐    ┌─────────────────┐
+                       │     CDN         │    │    Database     │
+                       │  (CloudFront)   │    │   (MongoDB)     │
+                       └─────────────────┘    └─────────────────┘
+```
+
+### 1.2 Environments
+- **Development**: Local development với Docker Compose
+- **Staging**: Testing environment trên cloud
+- **Production**: Production environment với high availability
+
+## 2. Prerequisites
+
+### 2.1 Required Tools
+```bash
+# Docker và Docker Compose
+docker --version
+docker-compose --version
+
+# Node.js và npm
+node --version
+npm --version
+
+# Git
+git --version
+
+# kubectl (cho Kubernetes deployment)
+kubectl version --client
+```
+
+### 2.2 Cloud Accounts
+- AWS/GCP/Azure account
+- Domain name và SSL certificates
+- Container registry access (GitHub Container Registry)
+
+## 3. Local Development Setup
+
+### 3.1 Clone Repository
+```bash
+git clone https://github.com/your-username/KTPM.git
+cd KTPM
+```
+
+### 3.2 Environment Configuration
+```bash
+# Tạo file .env cho Backend
+cp BackEnd/.env.example BackEnd/.env
+
+# Tạo file .env cho Frontend  
+cp FrontEnd/.env.example FrontEnd/.env
+
+# Cập nhật các biến môi trường
+```
+
+### 3.3 Start với Docker Compose
+```bash
+# Build và start tất cả services
+docker-compose up --build
+
+# Chạy ở background
+docker-compose up -d
+
+# Xem logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+### 3.4 Verify Local Setup
+```bash
+# Check health endpoints
+curl http://localhost:5000/health
+curl http://localhost:5000/health/detailed
+
+# Access application
+open http://localhost:5173
+```
+
+## 4. Staging Deployment
+
+### 4.1 GitHub Actions Setup
+```yaml
+# .github/workflows/deploy-staging.yml
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: staging
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to Railway
+        run: |
+          # Railway deployment commands
+          railway login --token ${{ secrets.RAILWAY_TOKEN }}
+          railway up
+```
+
+### 4.2 Railway Deployment
+```bash
+# Install Railway CLI
+npm install -g @railway/cli
+
+# Login
+railway login
+
+# Link project
+railway link
+
+# Deploy
+railway up
+```
+
+### 4.3 Vercel Frontend Deployment
+```bash
+# Install Vercel CLI
+npm install -g vercel
+
+# Login
+vercel login
+
+# Deploy
+cd FrontEnd
+vercel --prod
+```
+
+## 5. Production Deployment
+
+### 5.1 AWS ECS Deployment
+
+#### 5.1.1 ECS Task Definition
+```json
+{
+  "family": "ktpm-backend",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::account:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "backend",
+      "image": "ghcr.io/your-username/ktpm-backend:latest",
+      "portMappings": [
+        {
+          "containerPort": 5000,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "NODE_ENV",
+          "value": "production"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "MONGO_URI",
+          "valueFrom": "arn:aws:secretsmanager:region:account:secret:mongo-uri"
+        }
+      ],
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/ktmp-backend",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
+```
+
+#### 5.1.2 ECS Service
+```bash
+# Create ECS cluster
+aws ecs create-cluster --cluster-name ktpm-cluster
+
+# Register task definition
+aws ecs register-task-definition --cli-input-json file://task-definition.json
+
+# Create service
+aws ecs create-service \
+  --cluster ktpm-cluster \
+  --service-name ktpm-backend \
+  --task-definition ktpm-backend:1 \
+  --desired-count 2 \
+  --launch-type FARGATE \
+  --network-configuration "awsvpcConfiguration={subnets=[subnet-12345],securityGroups=[sg-12345],assignPublicIp=ENABLED}"
+```
+
+### 5.2 Kubernetes Deployment
+
+#### 5.2.1 Namespace và ConfigMap
+```yaml
+# k8s/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ktpm-production
+
+---
+# k8s/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ktpm-config
+  namespace: ktpm-production
+data:
+  NODE_ENV: "production"
+  PORT: "5000"
+```
+
+#### 5.2.2 Backend Deployment
+```yaml
+# k8s/backend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ktpm-backend
+  namespace: ktpm-production
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ktpm-backend
+  template:
+    metadata:
+      labels:
+        app: ktmp-backend
+    spec:
+      containers:
+      - name: backend
+        image: ghcr.io/your-username/ktpm-backend:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: ktpm-config
+              key: NODE_ENV
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: ktpm-secrets
+              key: mongo-uri
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+```
+
+#### 5.2.3 Service và Ingress
+```yaml
+# k8s/backend-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ktpm-backend-service
+  namespace: ktpm-production
+spec:
+  selector:
+    app: ktpm-backend
+  ports:
+  - port: 80
+    targetPort: 5000
+  type: ClusterIP
+
+---
+# k8s/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ktpm-ingress
+  namespace: ktpm-production
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+  - hosts:
+    - api.yourdomain.com
+    secretName: ktpm-tls
+  rules:
+  - host: api.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ktpm-backend-service
+            port:
+              number: 80
+```
+
+## 6. Database Setup
+
+### 6.1 MongoDB Atlas (Recommended)
+```bash
+# Connection string format
+mongodb+srv://username:password@cluster.mongodb.net/ktpm_production?retryWrites=true&w=majority
+```
+
+### 6.2 Self-hosted MongoDB
+```yaml
+# k8s/mongodb-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:7.0
+        ports:
+        - containerPort: 27017
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: admin
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: password
+        volumeMounts:
+        - name: mongodb-storage
+          mountPath: /data/db
+      volumes:
+      - name: mongodb-storage
+        persistentVolumeClaim:
+          claimName: mongodb-pvc
+```
+
+## 7. SSL/TLS Configuration
+
+### 7.1 Let's Encrypt với Cert-Manager
+```bash
+# Install cert-manager
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
+
+# Create ClusterIssuer
+kubectl apply -f - <<EOF
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: your-email@domain.com
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+EOF
+```
+
+## 8. Monitoring Setup
+
+### 8.1 Prometheus và Grafana
+```bash
+# Install using Helm
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+# Install Prometheus
+helm install prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --create-namespace
+
+# Access Grafana
+kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+```
+
+## 9. Backup Strategy
+
+### 9.1 Database Backup
+```bash
+# MongoDB backup script
+#!/bin/bash
+DATE=$(date +%Y%m%d_%H%M%S)
+mongodump --uri="$MONGO_URI" --out="/backups/mongodb_$DATE"
+aws s3 cp "/backups/mongodb_$DATE" "s3://your-backup-bucket/mongodb/" --recursive
+```
+
+### 9.2 Application Backup
+```bash
+# Backup application data
+kubectl create backup ktpm-backup --include-namespaces=ktpm-production
+```
+
+## 10. Rollback Procedures
+
+### 10.1 Kubernetes Rollback
+```bash
+# Check deployment history
+kubectl rollout history deployment/ktpm-backend -n ktpm-production
+
+# Rollback to previous version
+kubectl rollout undo deployment/ktpm-backend -n ktpm-production
+
+# Rollback to specific revision
+kubectl rollout undo deployment/ktpm-backend --to-revision=2 -n ktpm-production
+```
+
+### 10.2 Database Rollback
+```bash
+# Restore from backup
+mongorestore --uri="$MONGO_URI" --drop /path/to/backup
+```
+
+## 11. Troubleshooting
+
+### 11.1 Common Issues
+- **Container won't start**: Check logs với `docker logs` hoặc `kubectl logs`
+- **Database connection**: Verify connection string và network policies
+- **High memory usage**: Check for memory leaks, adjust resource limits
+- **Slow response**: Check database queries, add indexes
+
+### 11.2 Debug Commands
+```bash
+# Check pod status
+kubectl get pods -n ktpm-production
+
+# Get pod logs
+kubectl logs -f deployment/ktpm-backend -n ktpm-production
+
+# Execute into pod
+kubectl exec -it pod-name -n ktpm-production -- /bin/bash
+
+# Check resource usage
+kubectl top pods -n ktpm-production
+```

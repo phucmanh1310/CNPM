@@ -1,0 +1,116 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: ktpm-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: ktpm_ecommerce
+    volumes:
+      - mongodb_data:/data/db
+      - ./BackEnd/scripts/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - ktmp-network
+
+  # Backend Service
+  backend:
+    build:
+      context: ./BackEnd
+      dockerfile: Dockerfile
+      target: dev
+    container_name: ktpm-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      MONGO_URI: mongodb://admin:password@mongodb:27017/ktmp_ecommerce?authSource=admin
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+    volumes:
+      - ./BackEnd:/app
+      - /app/node_modules
+    depends_on:
+      - mongodb
+    networks:
+      - ktmp-network
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./FrontEnd
+      dockerfile: Dockerfile
+      target: dev
+    container_name: ktpm-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_BASE_URL: http://localhost:5000
+      VITE_ENVIRONMENT: development
+    volumes:
+      - ./FrontEnd:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - ktmp-network
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: ktpm-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ktmp-network
+    command: redis-server --appendonly yes
+
+  # Nginx Reverse Proxy (for production-like setup)
+  nginx:
+    image: nginx:alpine
+    container_name: ktpm-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - ktmp-network
+    profiles:
+      - production
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  ktmp-network:
+    driver: bridge
