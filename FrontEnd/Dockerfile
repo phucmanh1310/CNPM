@@ -1,5 +1,5 @@
 # Multi-stage build for React Frontend
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -31,6 +31,15 @@ EXPOSE 5173
 
 # Start development server
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
+# Test stage
+FROM base AS test
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+ENV NODE_ENV=test
+RUN npm run test:ci
 
 # Build stage
 FROM base AS builder

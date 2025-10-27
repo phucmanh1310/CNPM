@@ -1,0 +1,188 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: "18"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Code Quality Checks
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install Backend Dependencies
+        working-directory: ./BackEnd
+        run: npm ci
+
+      - name: Install Frontend Dependencies
+        working-directory: ./FrontEnd
+        run: npm ci
+
+      - name: Backend Lint Check
+        working-directory: ./BackEnd
+        run: npm run lint
+
+      - name: Frontend Lint Check
+        working-directory: ./FrontEnd
+        run: npm run lint
+
+      - name: Backend Security Audit
+        working-directory: ./BackEnd
+        run: npm audit --audit-level=moderate
+
+      - name: Frontend Security Audit
+        working-directory: ./FrontEnd
+        run: npm audit --audit-level=moderate
+
+  # Backend Tests
+  backend-tests:
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:7.0
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ismaster\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install Dependencies
+        working-directory: ./BackEnd
+        run: npm ci
+
+      - name: Run Unit Tests
+        working-directory: ./BackEnd
+        run: npm run test:ci
+        env:
+          NODE_ENV: test
+          MONGO_URI: mongodb://admin:password@localhost:27017/test?authSource=admin
+          JWT_SECRET: test-secret-key
+
+      - name: Run Integration Tests
+        working-directory: ./BackEnd
+        run: npm run test:ci -- tests/integration
+        env:
+          NODE_ENV: test
+          MONGO_URI: mongodb://admin:password@localhost:27017/test_integration?authSource=admin
+          JWT_SECRET: test-secret-key
+
+      - name: Upload Backend Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./BackEnd/coverage/lcov.info
+          flags: backend
+          name: backend-coverage
+
+  # Frontend Tests
+  frontend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install Dependencies
+        working-directory: ./FrontEnd
+        run: npm ci
+
+      - name: Run Unit Tests
+        working-directory: ./FrontEnd
+        run: npm run test:ci
+
+      - name: Run Integration Tests
+        working-directory: ./FrontEnd
+        run: npm run test:ci -- src/**/*.integration.test.jsx
+
+      - name: Build Frontend
+        working-directory: ./FrontEnd
+        run: npm run build
+
+      - name: Upload Frontend Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./FrontEnd/coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+
+  # Docker Build
+  build-images:
+    needs: [code-quality, backend-tests, frontend-tests]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        service: [backend, frontend]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ matrix.service == 'backend' && 'BackEnd' || 'FrontEnd' }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          target: production
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

@@ -3,59 +3,33 @@
 ## 1. Prerequisites Installation
 
 ### 1.1 Install Node.js và npm
+
 ```bash
 # Download và install Node.js từ https://nodejs.org/
 # Hoặc sử dụng Node Version Manager (nvm)
 
 # Windows
 # Download installer từ nodejs.org
-
-# macOS với Homebrew
-brew install node
-
-# Ubuntu/Debian
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
-
 # Verify installation
 node --version  # Should show v18.x.x or higher
 npm --version   # Should show 8.x.x or higher
 ```
 
 ### 1.2 Install Git
+
 ```bash
 # Windows
 # Download từ https://git-scm.com/download/win
-
-# macOS
-brew install git
-
-# Ubuntu/Debian
-sudo apt-get update
-sudo apt-get install git
 
 # Verify installation
 git --version
 ```
 
 ### 1.3 Install Docker
+
 ```bash
 # Windows
 # Download Docker Desktop từ https://www.docker.com/products/docker-desktop
-
-# macOS
-# Download Docker Desktop từ https://www.docker.com/products/docker-desktop
-
-# Ubuntu
-sudo apt-get update
-sudo apt-get install ca-certificates curl gnupg lsb-release
-
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-sudo apt-get update
-sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 # Add user to docker group
 sudo usermod -aG docker $USER
@@ -65,74 +39,19 @@ docker --version
 docker-compose --version
 ```
 
-### 1.4 Install Visual Studio Code (Recommended)
-```bash
-# Download từ https://code.visualstudio.com/
-
-# Recommended Extensions:
-# - ES7+ React/Redux/React-Native snippets
-# - Jest
-# - Docker
-# - GitLens
-# - Prettier
-# - ESLint
-```
-
 ## 2. Project Setup
 
-### 2.1 Clone Repository
-```bash
-# Clone project
-git clone https://github.com/your-username/KTPM.git
-cd KTPM
+### 2.1 Create development branch
 
-# Create development branch
+```bash
+##Giúp bảo vệ code chính
 git checkout -b feature/testing-setup
 ```
 
-### 2.2 Environment Variables Setup
-
-#### Backend Environment (.env)
-```bash
-# Navigate to BackEnd directory
-cd BackEnd
-
-# Create .env file
-touch .env
-
-# Add following content to .env:
-NODE_ENV=development
-PORT=5000
-MONGO_URI=mongodb://admin:password@localhost:27017/ktpm_test?authSource=admin
-JWT_SECRET=your-super-secret-jwt-key-for-testing
-CLOUDINARY_CLOUD_NAME=your-cloudinary-name
-CLOUDINARY_API_KEY=your-cloudinary-key
-CLOUDINARY_API_SECRET=your-cloudinary-secret
-EMAIL_USER=your-test-email@gmail.com
-EMAIL_PASS=your-app-password
-
-# Test environment variables
-NODE_ENV=test
-MONGO_URI=mongodb://admin:password@localhost:27017/ktpm_test?authSource=admin
-JWT_SECRET=test-jwt-secret
-```
-
-#### Frontend Environment (.env)
-```bash
-# Navigate to FrontEnd directory
-cd ../FrontEnd
-
-# Create .env file
-touch .env
-
-# Add following content:
-VITE_API_BASE_URL=http://localhost:5000
-VITE_ENVIRONMENT=development
-```
-
-### 2.3 Install Dependencies
+### 2.2 Install Dependencies
 
 #### Backend Dependencies
+
 ```bash
 cd BackEnd
 
@@ -140,6 +59,8 @@ cd BackEnd
 npm install
 
 # Install additional testing dependencies
+npm install --save-dev tslib
+++++++++++
 npm install --save-dev \
   jest \
   supertest \
@@ -151,6 +72,7 @@ npm install --save-dev \
 ```
 
 #### Frontend Dependencies
+
 ```bash
 cd ../FrontEnd
 
@@ -173,15 +95,10 @@ npm install --save-dev \
 ## 3. Database Setup
 
 ### 3.1 MongoDB với Docker
+
 ```bash
 # Start MongoDB container
-docker run -d \
-  --name ktpm-mongodb-test \
-  -p 27017:27017 \
-  -e MONGO_INITDB_ROOT_USERNAME=admin \
-  -e MONGO_INITDB_ROOT_PASSWORD=password \
-  -e MONGO_INITDB_DATABASE=ktpm_test \
-  mongo:7.0
+docker run -d --name ktpm-mongodb-test -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=password -e MONGO_INITDB_DATABASE=ktpm_test mongo:7.0
 
 # Verify MongoDB is running
 docker ps
@@ -189,6 +106,7 @@ docker logs ktpm-mongodb-test
 ```
 
 ### 3.2 MongoDB Memory Server (cho Unit Tests)
+
 ```bash
 # Đã cài đặt ở bước trước
 # Sẽ tự động start/stop trong test files
@@ -197,9 +115,10 @@ docker logs ktpm-mongodb-test
 ## 4. Testing Framework Setup
 
 ### 4.1 Jest Configuration (Backend)
+
 ```bash
 # Create jest.config.js in BackEnd directory
-cat > BackEnd/jest.config.js << 'EOF'
+$configContent = @"
 export default {
   testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
@@ -222,13 +141,16 @@ export default {
   resetMocks: true,
   restoreMocks: true
 };
-EOF
+"@
+
+$configContent | Out-File -FilePath BackEnd/jest.config.js -Encoding UTF8
 ```
 
 ### 4.2 Vitest Configuration (Frontend)
+
 ```bash
 # Update vite.config.js in FrontEnd directory
-cat > FrontEnd/vite.config.js << 'EOF'
+$viteConfigContent = @"
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -248,16 +170,19 @@ export default defineConfig({
     }
   },
 })
-EOF
+"@
+
+$viteConfigContent | Out-File -FilePath FrontEnd/vite.config.js -Encoding UTF8
 ```
 
 ### 4.3 Test Setup Files
 
 #### Backend Test Setup
+
 ```bash
 # Create tests directory and setup file
 mkdir -p BackEnd/tests
-cat > BackEnd/tests/setup.js << 'EOF'
+$setupContent = @"
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
@@ -285,14 +210,17 @@ afterEach(async () => {
     await collection.deleteMany({});
   }
 });
-EOF
+"@
+
+$setupContent | Out-File -FilePath BackEnd/tests/setup.js -Encoding UTF8
 ```
 
 #### Frontend Test Setup
+
 ```bash
 # Create test setup file
 mkdir -p FrontEnd/src/tests
-cat > FrontEnd/src/tests/setup.js << 'EOF'
+$setupFrontendContent = @"
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
@@ -317,12 +245,15 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }));
-EOF
+"@
+
+$setupFrontendContent | Out-File -FilePath FrontEnd/src/tests/setup.js -Encoding UTF8
 ```
 
 ## 5. GitHub Setup
 
 ### 5.1 Create GitHub Repository
+
 ```bash
 # If not already created
 # Go to GitHub.com
@@ -338,6 +269,7 @@ git push -u origin main
 ```
 
 ### 5.2 GitHub Secrets Setup
+
 ```bash
 # Go to your GitHub repository
 # Settings > Secrets and variables > Actions
@@ -346,7 +278,7 @@ git push -u origin main
 # MONGO_URI - MongoDB connection string for CI
 # JWT_SECRET - JWT secret for testing
 # CLOUDINARY_CLOUD_NAME - Cloudinary config
-# CLOUDINARY_API_KEY - Cloudinary config  
+# CLOUDINARY_API_KEY - Cloudinary config
 # CLOUDINARY_API_SECRET - Cloudinary config
 # EMAIL_USER - Email for testing
 # EMAIL_PASS - Email password
@@ -355,6 +287,7 @@ git push -u origin main
 ## 6. Docker Development Environment
 
 ### 6.1 Start Development Environment
+
 ```bash
 # From project root directory
 docker-compose up -d
@@ -368,6 +301,7 @@ docker-compose logs -f frontend
 ```
 
 ### 6.2 Development Workflow
+
 ```bash
 # Start development servers
 cd BackEnd && npm run dev &
@@ -385,16 +319,19 @@ cd BackEnd && npm run test:watch
 cd FrontEnd && npm run test:ui
 ```
 
+#### bước runtest sẽ để ta chạy các file test có trong app , ta sẽ setup file test
+
 ## 7. IDE Configuration
 
 ### 7.1 VS Code Settings
+
 ```json
 // Create .vscode/settings.json
 {
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "eslint.autoFixOnSave": true,
-  "jest.autoRun": "watch",
+  "jest.runMode": "watch",
   "jest.showCoverageOnLoad": true,
   "files.exclude": {
     "**/node_modules": true,
@@ -405,6 +342,7 @@ cd FrontEnd && npm run test:ui
 ```
 
 ### 7.2 VS Code Launch Configuration
+
 ```json
 // Create .vscode/launch.json
 {
@@ -436,6 +374,7 @@ cd FrontEnd && npm run test:ui
 ## 8. Verification Steps
 
 ### 8.1 Environment Verification
+
 ```bash
 # Check all tools are installed
 node --version
@@ -445,8 +384,7 @@ docker --version
 docker-compose --version
 
 # Check project setup
-cd KTPM
-ls -la  # Should see BackEnd, FrontEnd, docker-compose.yml
+Get-ChildItem -Force # Should see BackEnd, FrontEnd, docker-compose.yml
 
 # Check environment variables
 cd BackEnd && cat .env
@@ -454,6 +392,7 @@ cd ../FrontEnd && cat .env
 ```
 
 ### 8.2 Application Verification
+
 ```bash
 # Start services
 docker-compose up -d
@@ -467,6 +406,7 @@ docker exec ktpm-mongodb mongosh --eval "db.adminCommand('ismaster')"
 ```
 
 ### 8.3 Testing Verification
+
 ```bash
 # Run backend tests
 cd BackEnd
@@ -486,6 +426,7 @@ cd ../FrontEnd && npm run test:coverage
 ### 9.1 Common Issues
 
 #### Port Already in Use
+
 ```bash
 # Kill processes on ports
 lsof -ti:5000 | xargs kill -9
@@ -494,6 +435,7 @@ lsof -ti:27017 | xargs kill -9
 ```
 
 #### Docker Issues
+
 ```bash
 # Reset Docker
 docker-compose down
@@ -502,6 +444,7 @@ docker-compose up --build
 ```
 
 #### MongoDB Connection Issues
+
 ```bash
 # Check MongoDB container
 docker logs ktpm-mongodb-test
@@ -511,6 +454,7 @@ docker restart ktpm-mongodb-test
 ```
 
 ### 9.2 Getting Help
+
 - Check logs: `docker-compose logs service-name`
 - Verify environment variables
 - Check network connectivity

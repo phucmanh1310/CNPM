@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Fix for Windows - use npx to ensure correct npm is found
+npx --no-install lint-staged

@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  # Test Database
+  mongodb-test:
+    image: mongo:7.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: ktpm_test
+    ports:
+      - "27018:27017"
+    tmpfs:
+      - /data/db # Use tmpfs for faster test database
+
+  # Backend Tests
+  backend-test:
+    build:
+      context: ./BackEnd
+      target: test
+    environment:
+      NODE_ENV: test
+      MONGO_URI: mongodb://admin:password@mongodb-test:27017/ktpm_test?authSource=admin
+      JWT_SECRET: test-secret-key
+    depends_on:
+      - mongodb-test
+    volumes:
+      - ./BackEnd/coverage:/app/coverage
+
+  # Frontend Tests
+  frontend-test:
+    build:
+      context: ./FrontEnd
+      target: test
+    environment:
+      VITE_API_BASE_URL: http://backend-test:5000
+      VITE_ENVIRONMENT: test
+    volumes:
+      - ./FrontEnd/coverage:/app/coverage
+
+networks:
+  default:
+    name: ktpm-test-network

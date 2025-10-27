@@ -32,6 +32,15 @@ EXPOSE 5000
 # Start development server
 CMD ["npm", "run", "dev"]
 
+# Test stage
+FROM base AS test
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+ENV NODE_ENV=test
+RUN npm run test:ci
+
 # Production build stage
 FROM base AS builder
 WORKDIR /app
