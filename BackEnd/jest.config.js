@@ -12,6 +12,26 @@
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 85,
+      lines: 85,
+      statements: 85,
+    },
+    './controllers/': {
+      branches: 90,
+      functions: 95,
+      lines: 90,
+      statements: 90,
+    },
+    './utils/': {
+      branches: 85,
+      functions: 90,
+      lines: 85,
+      statements: 85,
+    },
+  },
   verbose: true,
   forceExit: true,
   clearMocks: true,

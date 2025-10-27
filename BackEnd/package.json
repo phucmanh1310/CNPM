@@ -6,9 +6,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
-    "lint": "eslint \"src/**/*.js\"",
-    "lint:fix": "eslint \"src/**/*.js\" --fix",
-    "format": "prettier --write \"src/**/*.{js,json,md}\"",
+    "lint": "eslint \"**/*.js\" --ignore-pattern \"node_modules/**\" --ignore-pattern \"coverage/**\" --ignore-pattern \"tests/**\"",
+    "lint:fix": "eslint \"**/*.js\" --fix --ignore-pattern \"node_modules/**\" --ignore-pattern \"coverage/**\" --ignore-pattern \"tests/**\"",
+    "format": "prettier --write \"**/*.{js,json,md}\" --ignore-path .gitignore",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

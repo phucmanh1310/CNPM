@@ -1,0 +1,65 @@
+name: Comprehensive Testing
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # Run daily at 2 AM
+  workflow_dispatch:
+
+jobs:
+  # Extended test suite
+  extended-tests:
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:7.0
+        env:
+          MONGO_INITDB_ROOT_USERNAME: admin
+          MONGO_INITDB_ROOT_PASSWORD: password
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: |
+          cd BackEnd && npm ci
+          cd ../FrontEnd && npm ci
+
+      - name: Run All Backend Tests
+        working-directory: ./BackEnd
+        run: |
+          npm run test:coverage
+          npm run test:ci -- tests/integration
+        env:
+          NODE_ENV: test
+          MONGO_URI: mongodb://admin:password@localhost:27017/test?authSource=admin
+          JWT_SECRET: test-secret-key
+
+      - name: Run All Frontend Tests
+        working-directory: ./FrontEnd
+        run: npm run test:coverage
+
+      - name: Generate Test Report
+        run: |
+          echo "# Test Report" > test-report.md
+          echo "## Backend Coverage" >> test-report.md
+          echo "$(cat BackEnd/coverage/coverage-summary.json)" >> test-report.md
+          echo "## Frontend Coverage" >> test-report.md
+          echo "$(cat FrontEnd/coverage/coverage-summary.json)" >> test-report.md
+
+      - name: Upload Test Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-reports
+          path: |
+            BackEnd/coverage/
+            FrontEnd/coverage/
+            test-report.md

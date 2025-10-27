@@ -1,7 +1,35 @@
 {
+  "name": "ktpm-ecommerce",
+  "version": "1.0.0",
+  "scripts": {
+    "prepare": "husky install",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd BackEnd && npm run dev",
+    "dev:frontend": "cd FrontEnd && npm run dev",
+    "test": "concurrently \"npm run test:backend\" \"npm run test:frontend\"",
+    "test:backend": "cd BackEnd && npm test",
+    "test:frontend": "cd FrontEnd && npm test",
+    "test:coverage": "concurrently \"npm run test:coverage:backend\" \"npm run test:coverage:frontend\"",
+    "test:coverage:backend": "cd BackEnd && npm run test:coverage",
+    "test:coverage:frontend": "cd FrontEnd && npm run test:coverage",
+    "lint": "concurrently \"npm run lint:backend\" \"npm run lint:frontend\"",
+    "lint:backend": "cd BackEnd && npm run lint",
+    "lint:frontend": "cd FrontEnd && npm run lint",
+    "lint:fix": "concurrently \"npm run lint:fix:backend\" \"npm run lint:fix:frontend\"",
+    "lint:fix:backend": "cd BackEnd && npm run lint:fix",
+    "lint:fix:frontend": "cd FrontEnd && npm run lint:fix",
+    "docker:dev": "docker-compose up --build",
+    "docker:test": "docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit",
+    "pre-commit": "lint-staged"
+  },
   "dependencies": {
     "@reduxjs/toolkit": "^2.9.0",
     "react-redux": "^9.2.0",
     "redux-persist": "^6.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.0"
   }
 }
