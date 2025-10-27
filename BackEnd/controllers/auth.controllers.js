@@ -17,20 +17,16 @@ export const signUp = async (req, res) => {
     }
 
     if (!password || password.length < 6) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: 'Password must be at least 6 characters',
-        })
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters',
+      })
     }
     if (!mobile || mobile.length < 10) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: 'Mobile number must be at least 10 characters',
-        })
+      return res.status(400).json({
+        success: false,
+        message: 'Mobile number must be at least 10 characters',
+      })
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
@@ -104,7 +100,6 @@ export const signOut = async (req, res) => {
     res.clearCookie('token')
     return res.status(200).json({ message: 'Log out successfully' })
   } catch (error) {
-    // SỬA: $(error) → ${error}
     return res.status(500).json(`sign Out error ${error}`)
   }
 }

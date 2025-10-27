@@ -19,4 +19,5 @@ authRouter.post('/register', signUp)
 authRouter.post('/login', signIn)
 
 authRouter.get('/signout', signOut)
+authRouter.post('/logout', signOut)
 export default authRouter
