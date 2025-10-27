@@ -1,9 +1,12 @@
 name: Deploy to Staging
 
 on:
-  push:
-    branches: [develop]
   workflow_dispatch:
+    inputs:
+      service:
+        description: "Service to deploy (backend/frontend/both)"
+        required: false
+        default: "both"
 
 jobs:
   deploy:
