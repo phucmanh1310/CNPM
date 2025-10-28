@@ -16,24 +16,11 @@ import adminRouter from './routes/admin.routes.js'
 const app = express()
 const PORT = process.env.PORT || 5000
 
-// CORS configuration - allow both local and production
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://cnpm-ten.vercel.app', // Replace with your actual Vercel URL
-  process.env.FRONTEND_URL, // Add from Render env vars
-].filter(Boolean)
-
+// CORS configuration - TEMPORARY: Allow all origins for testing
+// TODO: Replace with specific Vercel URL after deployment
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (mobile apps, Postman, etc.)
-      if (!origin) return callback(null, true)
-
-      if (allowedOrigins.indexOf(origin) === -1) {
-        return callback(new Error('CORS policy: Origin not allowed'), false)
-      }
-      return callback(null, true)
-    },
+    origin: true, // Allow all origins temporarily
     credentials: true,
   })
 )
