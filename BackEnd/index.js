@@ -36,6 +36,27 @@ app.get('/health', (req, res) => {
   })
 })
 
+// Root route - API info
+app.get('/', (req, res) => {
+  res.json({
+    message: 'KTMP E-commerce API',
+    status: 'running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth',
+      users: '/api/user',
+      shops: '/api/shop',
+      items: '/api/item',
+      orders: '/api/order',
+      drones: '/api/drone',
+      payment: '/api/payment',
+      admin: '/api/admin',
+    },
+    docs: 'Visit /health for health status',
+  })
+})
+
 app.use('/api/auth', authRouter)
 app.use('/api/user', userRouter)
 app.use('/api/shop', shopRouter)
