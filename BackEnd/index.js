@@ -19,9 +19,13 @@ const PORT = process.env.PORT || 5000
 // CORS configuration - TEMPORARY: Allow all origins for testing
 // TODO: Replace with specific Vercel URL after deployment
 const allowedOrigins = [
-  ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : []),
   'http://localhost:5173',
+  // Add the main production URL from your .env file if you have one
+  ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : []),
 ]
+
+// Regex to match Vercel's preview deployment URLs for your project
+const vercelPreviewRegex = /^https:\/\/cnpm-.*\.vercel\.app$/
 
 app.use(
   cors({
@@ -29,12 +33,14 @@ app.use(
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true)
 
-      if (allowedOrigins.indexOf(origin) === -1) {
+      // Check if the origin is in the allowed list or matches the Vercel regex
+      if (allowedOrigins.includes(origin) || vercelPreviewRegex.test(origin)) {
+        return callback(null, true)
+      } else {
         const msg =
           'The CORS policy for this site does not allow access from the specified Origin.'
         return callback(new Error(msg), false)
       }
-      return callback(null, true)
     },
     credentials: true,
   })
