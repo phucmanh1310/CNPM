@@ -13,6 +13,9 @@ import droneRouter from './routes/drone.routes.js'
 import paymentRouter from './routes/payment.routes.js'
 import adminRouter from './routes/admin.routes.js'
 
+// Trust the first proxy in front of the app (e.g., Render's reverse proxy)
+app.set('trust proxy', 1)
+
 const app = express()
 const PORT = process.env.PORT || 5000
 
