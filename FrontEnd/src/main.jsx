@@ -6,6 +6,10 @@ import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import { store, persistor } from './redux/store.js'
 import { PersistGate } from 'redux-persist/integration/react'
+import axios from 'axios'
+
+// Set withCredentials to true for all requests globally
+axios.defaults.withCredentials = true
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
