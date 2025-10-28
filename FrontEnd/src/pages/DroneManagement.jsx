@@ -7,7 +7,6 @@ import useGetShopDrones from '../hooks/useGetShopDrones'
 import DroneCard from '../components/DroneCard'
 import Toast from '../components/Toast'
 import axios from 'axios'
-import { serverURL } from '../config/api'
 
 function DroneManagement() {
   const navigate = useNavigate()
@@ -33,13 +32,9 @@ function DroneManagement() {
   const handleStatusUpdate = async (droneId, newStatus) => {
     try {
       setUpdating(true)
-      await axios.put(
-        `${serverURL}/api/drone/updateStatus/${droneId}`,
-        {
-          status: newStatus,
-        },
-        { withCredentials: true }
-      )
+      await axios.put(`/api/drone/updateStatus/${droneId}`, {
+        status: newStatus,
+      })
 
       refetch()
       setToast({
@@ -71,29 +66,16 @@ function DroneManagement() {
 
     try {
       setUpdating(true)
-      const response = await fetch(
-        `${serverURL}/api/drone/resetAllDrones/${myShopData._id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        }
+      const { data } = await axios.put(
+        `/api/drone/resetAllDrones/${myShopData._id}`
       )
 
-      const data = await response.json()
-
-      if (response.status === 200) {
-        setToast({
-          show: true,
-          message: `Successfully reset ${data.modifiedCount} drones to Available status`,
-          type: 'success',
-        })
-        refetch() // Refresh drone list
-      } else {
-        throw new Error(data.message || 'Failed to reset drones')
-      }
+      setToast({
+        show: true,
+        message: `Successfully reset ${data.modifiedCount} drones to Available status`,
+        type: 'success',
+      })
+      refetch() // Refresh drone list
     } catch (error) {
       console.error('Error resetting drones:', error)
       setToast({
@@ -122,36 +104,24 @@ function DroneManagement() {
         droneId: drone._id,
       })
 
-      const response = await fetch(`${serverURL}/api/drone/assignToOrder`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          orderId: assignOrder.orderId,
-          shopOrderId: assignOrder.shopOrderId,
-          droneId: drone._id,
-        }),
+      const { data } = await axios.put(`/api/drone/assignToOrder`, {
+        orderId: assignOrder.orderId,
+        shopOrderId: assignOrder.shopOrderId,
+        droneId: drone._id,
       })
 
-      const data = await response.json()
       console.log('Assign drone response:', data)
 
-      if (response.status === 200) {
-        setToast({
-          show: true,
-          message: `Drone ${drone.name} assigned to order successfully!`,
-          type: 'success',
-        })
+      setToast({
+        show: true,
+        message: `Drone ${drone.name} assigned to order successfully!`,
+        type: 'success',
+      })
 
-        // Clear assign order and navigate back to orders
-        setTimeout(() => {
-          navigate('/my-orders')
-        }, 2000)
-      } else {
-        throw new Error(data.message || 'Failed to assign drone')
-      }
+      // Clear assign order and navigate back to orders
+      setTimeout(() => {
+        navigate('/my-orders')
+      }, 2000)
     } catch (error) {
       console.error('Error assigning drone:', error)
       setToast({

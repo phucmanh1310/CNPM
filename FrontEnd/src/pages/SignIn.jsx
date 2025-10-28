@@ -4,7 +4,7 @@ import { FaRegEye } from 'react-icons/fa'
 import { FaRegEyeSlash } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
 import { useNavigate } from 'react-router-dom'
-import { serverURL } from '../config/api' // Import từ App.js
+
 // import authRouter from "./routes/auth.routes.js";
 import {} from 'react-spinners'
 import axios from 'axios'
@@ -49,11 +49,7 @@ function SignIn() {
   const handleSignIn = async () => {
     setLoading(true)
     try {
-      const result = await axios.post(
-        `${serverURL}/api/auth/signin`,
-        { email, password },
-        { withCredentials: true }
-      )
+      const result = await axios.post(`/api/auth/signin`, { email, password })
 
       // ✅ Dispatch dữ liệu user vào Redux
       dispatch(setUserData(result.data.user)) // Chú ý: result.data.user, không phải result.data

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { serverURL } from '../config/api'
 
 function useGetOwnerOrderCount() {
   const [orderCount, setOrderCount] = useState(0)
@@ -10,12 +9,7 @@ function useGetOwnerOrderCount() {
   const fetchOrderCount = async () => {
     try {
       setLoading(true)
-      const { data } = await axios.get(
-        `${serverURL}/api/order/getOwnerOrders`,
-        {
-          withCredentials: true,
-        }
-      )
+      const { data } = await axios.get(`/api/order/getOwnerOrders`)
 
       // Đếm số lượng đơn hàng có status pending
       const pendingCount = data.reduce((count, order) => {

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { serverURL } from '../config/api'
 
 function useGetUserOrders() {
   const [userOrders, setUserOrders] = useState([])
@@ -10,9 +9,7 @@ function useGetUserOrders() {
   const fetchUserOrders = async () => {
     try {
       setLoading(true)
-      const { data } = await axios.get(`${serverURL}/api/order/getUserOrders`, {
-        withCredentials: true,
-      })
+      const { data } = await axios.get(`/api/order/getUserOrders`)
       setUserOrders(data)
       setError(null)
     } catch (error) {

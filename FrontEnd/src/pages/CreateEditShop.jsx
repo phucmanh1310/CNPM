@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { FaUtensils, FaMapMarkerAlt, FaLocationArrow } from 'react-icons/fa'
 import { useState } from 'react'
 import axios from 'axios'
-import { serverURL } from '../config/api'
+
 import { useDispatch } from 'react-redux'
 import { setMyShopData } from '../redux/ownerSlice'
 import useGetMyShop from '../hooks/useGetMyShop'
@@ -100,11 +100,7 @@ function CreateEditShop() {
       if (backendImage) {
         formData.append('image', backendImage)
       }
-      const result = await axios.post(
-        `${serverURL}/api/shop/create-edit`,
-        formData,
-        { withCredentials: true }
-      )
+      const result = await axios.post(`/api/shop/create-edit`, formData)
       // cập nhật Redux ngay kết quả mới
       dispatch(setMyShopData(result.data.shop || result.data))
       // gọi fetch lại shop từ server

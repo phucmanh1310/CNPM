@@ -8,7 +8,6 @@ import { FaPen } from 'react-icons/fa6'
 import { FaThLarge, FaBars } from 'react-icons/fa'
 import useGetMyShop from '../hooks/useGetMyShop'
 import OwnerItemCard from './OwnerItemCard'
-import { serverURL } from '../config/api'
 
 export default function OwnerDashboard() {
   const navigate = useNavigate()
@@ -46,9 +45,7 @@ export default function OwnerDashboard() {
   const handleDeleteItem = async (item) => {
     if (!window.confirm('Delete this item?')) return
     try {
-      await axios.delete(`${serverURL}/api/item/delete-item/${item._id}`, {
-        withCredentials: true,
-      })
+      await axios.delete(`/api/item/delete-item/${item._id}`)
       // Cập nhật lại danh sách sau khi xóa
       await refetch()
     } catch (err) {

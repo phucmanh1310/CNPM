@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { serverURL } from '../config/api'
+
 import axios from 'axios'
 import { useDispatch, useSelector } from 'react-redux'
 import { setUserData } from '../redux/userSlice'
@@ -32,15 +32,11 @@ function AdminDashboard() {
     setLoading(true)
     try {
       // Fetch users
-      const usersRes = await axios.get(`${serverURL}/api/admin/users`, {
-        withCredentials: true,
-      })
+      const usersRes = await axios.get(`/api/admin/users`)
       setUsers(usersRes.data.users)
 
       // Fetch shops
-      const shopsRes = await axios.get(`${serverURL}/api/admin/shops`, {
-        withCredentials: true,
-      })
+      const shopsRes = await axios.get(`/api/admin/shops`)
       setShops(shopsRes.data.shops)
 
       // Calculate stats
@@ -56,11 +52,9 @@ function AdminDashboard() {
 
   const handleUserToggle = async (userId, isActive) => {
     try {
-      await axios.patch(
-        `${serverURL}/api/admin/users/${userId}/toggle`,
-        { isActive: !isActive },
-        { withCredentials: true }
-      )
+      await axios.patch(`/api/admin/users/${userId}/toggle`, {
+        isActive: !isActive,
+      })
       fetchData() // Refresh data
     } catch (error) {
       console.error('Error toggling user:', error)
@@ -69,11 +63,9 @@ function AdminDashboard() {
 
   const handleShopToggle = async (shopId, isActive) => {
     try {
-      await axios.patch(
-        `${serverURL}/api/admin/shops/${shopId}/toggle`,
-        { isActive: !isActive },
-        { withCredentials: true }
-      )
+      await axios.patch(`/api/admin/shops/${shopId}/toggle`, {
+        isActive: !isActive,
+      })
       fetchData() // Refresh data
     } catch (error) {
       console.error('Error toggling shop:', error)
@@ -86,9 +78,7 @@ function AdminDashboard() {
       dispatch(setUserData(null))
 
       // Gọi API logout
-      await axios.get(`${serverURL}/api/auth/signout`, {
-        withCredentials: true,
-      })
+      await axios.get(`/api/auth/signout`)
 
       // Navigate về admin login
       navigate('/admin-login')

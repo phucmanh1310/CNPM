@@ -4,7 +4,7 @@ import { FaRegEye } from 'react-icons/fa'
 import { FaRegEyeSlash } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
 import { useNavigate } from 'react-router-dom'
-import { serverURL } from '../config/api' // Import từ App.js
+
 import { ClipLoader } from 'react-spinners'
 // import authRouter from "./routes/auth.routes.js";
 import axios from 'axios'
@@ -67,17 +67,13 @@ function SignUp() {
     }
     setLoading(true)
     try {
-      const result = await axios.post(
-        `${serverURL}/api/auth/signup`,
-        {
-          fullName,
-          email,
-          password,
-          mobile,
-          role,
-        },
-        { withCredentials: true }
-      )
+      const result = await axios.post(`/api/auth/signup`, {
+        fullName,
+        email,
+        password,
+        mobile,
+        role,
+      })
       setErr('')
       dispatch(setUserData(result.data))
       setLoading(false)

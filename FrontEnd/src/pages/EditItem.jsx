@@ -3,7 +3,7 @@ import { IoIosArrowRoundBack } from 'react-icons/io'
 import { FaUtensils } from 'react-icons/fa'
 import { useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
-import { serverURL } from '../config/api'
+
 import useGetMyShop from '../hooks/useGetMyShop'
 
 export default function EditItem() {
@@ -23,7 +23,7 @@ export default function EditItem() {
   // load item once
   useEffect(() => {
     axios
-      .get(`${serverURL}/api/item/${itemId}`, { withCredentials: true })
+      .get(`/api/item/${itemId}`)
       .then((res) => {
         const item = res.data
         setName(item.name)
@@ -55,9 +55,7 @@ export default function EditItem() {
       form.append('foodType', foodType)
       if (backendImage) form.append('image', backendImage)
 
-      await axios.put(`${serverURL}/api/item/edit-item/${itemId}`, form, {
-        withCredentials: true,
-      })
+      await axios.put(`/api/item/edit-item/${itemId}`, form)
 
       await refetch()
       navigate('/')

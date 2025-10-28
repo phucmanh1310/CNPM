@@ -4,7 +4,7 @@ import { FaUtensils } from 'react-icons/fa'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { serverURL } from '../config/api'
+
 import useGetMyShop from '../hooks/useGetMyShop'
 
 export default function AddItem() {
@@ -47,9 +47,7 @@ export default function AddItem() {
       form.append('foodType', foodType)
       if (backendImage) form.append('image', backendImage)
 
-      await axios.post(`${serverURL}/api/item/add-item`, form, {
-        withCredentials: true,
-      })
+      await axios.post(`/api/item/add-item`, form)
 
       // Refetch shop (server populates item array)
       await refetch()

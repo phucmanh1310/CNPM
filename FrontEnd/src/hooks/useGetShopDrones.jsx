@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
-import { serverURL } from '../config/api'
 
 function useGetShopDrones(shopId) {
   const [drones, setDrones] = useState([])
@@ -15,12 +14,7 @@ function useGetShopDrones(shopId) {
 
     try {
       setLoading(true)
-      const { data } = await axios.get(
-        `${serverURL}/api/drone/getShopDrones/${shopId}`,
-        {
-          withCredentials: true,
-        }
-      )
+      const { data } = await axios.get(`/api/drone/getShopDrones/${shopId}`)
       setDrones(data.drones || [])
       setError(null)
     } catch (error) {

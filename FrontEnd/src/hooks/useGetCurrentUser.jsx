@@ -2,7 +2,7 @@
 import { useEffect, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import axios from 'axios'
-import { serverURL } from '../config/api'
+
 import { setUserData } from '../redux/userSlice'
 
 function useGetCurrentUser() {
@@ -11,9 +11,7 @@ function useGetCurrentUser() {
 
   const fetchCurrentUser = useCallback(async () => {
     try {
-      const { data } = await axios.get(`${serverURL}/api/user/current`, {
-        withCredentials: true,
-      })
+      const { data } = await axios.get(`/api/user/current`)
       dispatch(setUserData(data.user))
     } catch (error) {
       // Nếu không có token hoặc token expired, clear user data

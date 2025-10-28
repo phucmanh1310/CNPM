@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { FaRegEye } from 'react-icons/fa'
 import { FaRegEyeSlash } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
-import { serverURL } from '../config/api'
+
 import { ClipLoader } from 'react-spinners'
 import axios from 'axios'
 import { useDispatch } from 'react-redux'
@@ -24,11 +24,7 @@ function AdminLogin() {
   const handleAdminLogin = async () => {
     setLoading(true)
     try {
-      const result = await axios.post(
-        `${serverURL}/api/auth/signin`,
-        { email, password },
-        { withCredentials: true }
-      )
+      const result = await axios.post(`/api/auth/signin`, { email, password })
 
       // Kiểm tra nếu user có role admin
       if (result.data.user.role !== 'admin') {

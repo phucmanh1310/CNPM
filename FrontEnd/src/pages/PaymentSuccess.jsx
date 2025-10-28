@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { FaCheckCircle, FaTimesCircle, FaSpinner } from 'react-icons/fa'
 import axios from 'axios'
-import { serverURL } from '../config/api'
 
 function PaymentSuccess() {
   const navigate = useNavigate()
@@ -35,12 +34,7 @@ function PaymentSuccess() {
         }
 
         // Check payment status
-        const response = await axios.get(
-          `${serverURL}/api/payment/status/${paymentId}`,
-          {
-            withCredentials: true,
-          }
-        )
+        const response = await axios.get(`/api/payment/status/${paymentId}`)
 
         console.log('Payment status response:', response.data)
 

@@ -9,7 +9,7 @@ import OrderCard from '../components/OrderCard'
 import Toast from '../components/Toast'
 import NotificationToast from '../components/NotificationToast'
 import axios from 'axios'
-import { serverURL } from '../config/api'
+
 import { TbReceipt2 } from 'react-icons/tb'
 import { IoIosArrowRoundBack } from 'react-icons/io'
 
@@ -48,15 +48,11 @@ function MyOrders() {
   const handleStatusUpdate = async (orderId, shopOrderId, newStatus) => {
     try {
       setUpdating(true)
-      await axios.put(
-        `${serverURL}/api/order/updateOrderStatus`,
-        {
-          orderId,
-          shopOrderId,
-          status: newStatus,
-        },
-        { withCredentials: true }
-      )
+      await axios.put(`/api/order/updateOrderStatus`, {
+        orderId,
+        shopOrderId,
+        status: newStatus,
+      })
 
       // Refetch orders after update
       if (userData.role === 'owner') {
@@ -79,15 +75,11 @@ function MyOrders() {
   const handleCancelOrder = async (orderId, shopOrderId, cancelReason) => {
     try {
       setUpdating(true)
-      await axios.put(
-        `${serverURL}/api/order/cancelOrder`,
-        {
-          orderId,
-          shopOrderId,
-          cancelReason,
-        },
-        { withCredentials: true }
-      )
+      await axios.put(`/api/order/cancelOrder`, {
+        orderId,
+        shopOrderId,
+        cancelReason,
+      })
 
       // Refetch orders after cancel
       if (userData.role === 'owner') {

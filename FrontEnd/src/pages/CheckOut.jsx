@@ -27,7 +27,6 @@ import {
 import { clearCart } from '../redux/userSlice'
 import { ClipLoader } from 'react-spinners'
 import axios from 'axios'
-import { serverURL } from '../config/api'
 
 // Debounce hook
 function useDebounce(callback, delay) {
@@ -216,19 +215,15 @@ function CheckOut() {
       return
     }
     try {
-      const result = await axios.post(
-        `${serverURL}/api/order/placeOrder`,
-        {
-          paymentMethod,
-          deliveryAddress: {
-            text: inputAddress,
-            latitude: location.lat,
-            longitude: location.lon,
-          },
-          cartItems,
+      const result = await axios.post(`/api/order/placeOrder`, {
+        paymentMethod,
+        deliveryAddress: {
+          text: inputAddress,
+          latitude: location.lat,
+          longitude: location.lon,
         },
-        { withCredentials: true }
-      )
+        cartItems,
+      })
 
       console.log('Order placed successfully:', result.data)
 
@@ -239,16 +234,12 @@ function CheckOut() {
 
         // Create MoMo payment for all orders in the session
         try {
-          const paymentResult = await axios.post(
-            `${serverURL}/api/payment/momo/create`,
-            {
-              orderIds: result.data.orders.map((order) => order._id), // Pass all order IDs
-              sessionId: result.data.sessionId,
-              amount: totalAmount,
-              orderInfo: orderInfo,
-            },
-            { withCredentials: true }
-          )
+          const paymentResult = await axios.post(`/api/payment/momo/create`, {
+            orderIds: result.data.orders.map((order) => order._id), // Pass all order IDs
+            sessionId: result.data.sessionId,
+            amount: totalAmount,
+            orderInfo: orderInfo,
+          })
 
           if (paymentResult.data.success) {
             // Clear cart before redirecting to MoMo

@@ -2,7 +2,7 @@ import React from 'react'
 import { IoMdArrowRoundBack } from 'react-icons/io'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { serverURL } from '../config/api'
+
 import {} from 'react-spinners'
 
 function ForgotPassword() {
@@ -17,11 +17,7 @@ function ForgotPassword() {
   const handleSendOtp = async () => {
     try {
       setLoading(true)
-      const result = await axios.post(
-        `${serverURL}/api/auth/send-otp`,
-        { email },
-        { withCredentials: true }
-      )
+      const result = await axios.post(`/api/auth/send-otp`, { email })
       console.log(result)
       setErr('')
       setStep(2)
@@ -35,11 +31,7 @@ function ForgotPassword() {
   const handleVerifyOtp = async () => {
     try {
       setLoading(true)
-      const result = await axios.post(
-        `${serverURL}/api/auth/verify-otp`,
-        { email, otp },
-        { withCredentials: true }
-      )
+      const result = await axios.post(`/api/auth/verify-otp`, { email, otp })
       console.log(result)
       setErr('')
       setStep(3)
@@ -56,11 +48,10 @@ function ForgotPassword() {
       if (newPassword != confirmPassword) {
         return null
       }
-      const result = await axios.post(
-        `${serverURL}/api/auth/reset-password`,
-        { email, newPassword },
-        { withCredentials: true }
-      )
+      const result = await axios.post(`/api/auth/reset-password`, {
+        email,
+        newPassword,
+      })
       setErr('')
       console.log(result)
       setLoading(false)

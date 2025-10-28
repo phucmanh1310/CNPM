@@ -7,7 +7,7 @@ import { FaUser } from 'react-icons/fa'
 import { useSelector } from 'react-redux'
 import { RxCross2 } from 'react-icons/rx'
 import { FaPlus } from 'react-icons/fa6'
-import { serverURL } from '../config/api'
+
 import { useDispatch } from 'react-redux'
 import { setUserData } from '../redux/userSlice'
 import { TbReceipt2 } from 'react-icons/tb'
@@ -34,9 +34,7 @@ function Nav() {
   // Hàm xử lý đăng xuất
   const handleLogout = async () => {
     try {
-      await axios.get(`${serverURL}/api/auth/signout`, {
-        withCredentials: true,
-      })
+      await axios.get(`/api/auth/signout`)
       dispatch(setUserData(null))
     } catch (error) {
       console.log(error)

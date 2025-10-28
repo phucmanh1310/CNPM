@@ -2,7 +2,7 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect, useCallback } from 'react'
 import axios from 'axios'
-import { serverURL } from '../config/api'
+
 import { setMyShopData } from '../redux/ownerSlice'
 
 function useGetMyShop() {
@@ -12,9 +12,7 @@ function useGetMyShop() {
 
   const fetchShop = useCallback(async () => {
     try {
-      const { data } = await axios.get(`${serverURL}/api/shop/get-my`, {
-        withCredentials: true,
-      })
+      const { data } = await axios.get(`/api/shop/get-my`)
       // console.log('fetchShop data:', data);
       // Backend có thể trả về { shop } hoặc trả trực tiếp shop object
       dispatch(setMyShopData(data?.shop ?? data))

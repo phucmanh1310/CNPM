@@ -74,6 +74,7 @@ export const getCurrentLocation = createAsyncThunk(
                   apiKey: GEOAPIFY_API_KEY,
                   lang: 'vi',
                 },
+                withCredentials: false, // Override global default
               }
             )
 
@@ -136,6 +137,7 @@ export const geocodeAddress = createAsyncThunk(
         'https://api.geoapify.com/v1/geocode/search',
         {
           params,
+          withCredentials: false, // Override global default
         }
       )
 
@@ -207,6 +209,7 @@ export const getAddressSuggestions = createAsyncThunk(
         'https://api.geoapify.com/v1/geocode/autocomplete',
         {
           params,
+          withCredentials: false, // Override global default
         }
       )
 
@@ -240,6 +243,7 @@ export const reverseGeocodeFromCoordinates = createAsyncThunk(
             apiKey: GEOAPIFY_API_KEY,
             lang: 'vi',
           },
+          withCredentials: false, // Override global default
         }
       )
 

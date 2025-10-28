@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { serverURL } from '../config/api'
 
 function useGetOwnerOrders() {
   const [ownerOrders, setOwnerOrders] = useState([])
@@ -10,12 +9,7 @@ function useGetOwnerOrders() {
   const fetchOwnerOrders = async () => {
     try {
       setLoading(true)
-      const { data } = await axios.get(
-        `${serverURL}/api/order/getOwnerOrders`,
-        {
-          withCredentials: true,
-        }
-      )
+      const { data } = await axios.get(`/api/order/getOwnerOrders`)
       setOwnerOrders(data)
       setError(null)
     } catch (error) {

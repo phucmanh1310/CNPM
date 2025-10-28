@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import axios from 'axios'
-import { serverURL } from '../config/api'
 
 function useConfirmDelivery() {
   const [loading, setLoading] = useState(false)
@@ -11,14 +10,10 @@ function useConfirmDelivery() {
       setLoading(true)
       setError(null)
 
-      const { data } = await axios.put(
-        `${serverURL}/api/order/confirmDelivery`,
-        {
-          orderId,
-          shopOrderId,
-        },
-        { withCredentials: true }
-      )
+      const { data } = await axios.put(`/api/order/confirmDelivery`, {
+        orderId,
+        shopOrderId,
+      })
 
       return data
     } catch (error) {

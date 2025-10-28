@@ -18,9 +18,10 @@ const PORT = process.env.PORT || 5000
 
 // CORS configuration - TEMPORARY: Allow all origins for testing
 // TODO: Replace with specific Vercel URL after deployment
-const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',')
-  : []
+const allowedOrigins = [
+  ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : []),
+  'http://localhost:5173',
+]
 
 app.use(
   cors({
