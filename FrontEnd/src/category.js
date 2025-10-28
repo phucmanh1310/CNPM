@@ -10,11 +10,11 @@ export const categories = [
   },
   {
     name: 'Dessert',
-    image: '/dessert.png',
+    image: '/Dessert.png',
   },
   {
     name: 'Beverage',
-    image: '/beverage.png',
+    image: '/Beverage.png',
   },
   {
     name: 'Salad',
