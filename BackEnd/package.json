@@ -6,6 +6,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
+    "start": "node index.js",
+    "production": "node index.js",
     "lint": "eslint \"**/*.js\" --ignore-pattern \"node_modules/**\" --ignore-pattern \"coverage/**\" --ignore-pattern \"tests/**\"",
     "lint:fix": "eslint \"**/*.js\" --fix --ignore-pattern \"node_modules/**\" --ignore-pattern \"coverage/**\" --ignore-pattern \"tests/**\"",
     "format": "prettier --write \"**/*.{js,json,md}\" --ignore-path .gitignore",
