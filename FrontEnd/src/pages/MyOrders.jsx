@@ -9,7 +9,7 @@ import OrderCard from '../components/OrderCard'
 import Toast from '../components/Toast'
 import NotificationToast from '../components/NotificationToast'
 import axios from 'axios'
-import { serverURL } from '../App'
+import { serverURL } from '../config/api'
 import { TbReceipt2 } from 'react-icons/tb'
 import { IoIosArrowRoundBack } from 'react-icons/io'
 

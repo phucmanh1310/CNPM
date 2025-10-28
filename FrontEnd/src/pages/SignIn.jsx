@@ -4,7 +4,7 @@ import { FaRegEye } from 'react-icons/fa'
 import { FaRegEyeSlash } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
 import { useNavigate } from 'react-router-dom'
-import { serverURL } from '../App' // Import từ App.js
+import { serverURL } from '../config/api' // Import từ App.js
 // import authRouter from "./routes/auth.routes.js";
 import {} from 'react-spinners'
 import axios from 'axios'

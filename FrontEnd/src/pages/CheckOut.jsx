@@ -27,7 +27,7 @@ import {
 import { clearCart } from '../redux/userSlice'
 import { ClipLoader } from 'react-spinners'
 import axios from 'axios'
-import { serverURL } from '../App'
+import { serverURL } from '../config/api'
 
 // Debounce hook
 function useDebounce(callback, delay) {

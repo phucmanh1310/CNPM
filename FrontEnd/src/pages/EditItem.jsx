@@ -3,7 +3,7 @@ import { IoIosArrowRoundBack } from 'react-icons/io'
 import { FaUtensils } from 'react-icons/fa'
 import { useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
-import { serverURL } from '../App'
+import { serverURL } from '../config/api'
 import useGetMyShop from '../hooks/useGetMyShop'
 
 export default function EditItem() {

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import axios from 'axios'
-import { serverURL } from '../App'
+import { serverURL } from '../config/api'
 
 function useConfirmDelivery() {
   const [loading, setLoading] = useState(false)

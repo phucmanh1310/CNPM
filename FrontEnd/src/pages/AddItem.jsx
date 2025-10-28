@@ -4,7 +4,7 @@ import { FaUtensils } from 'react-icons/fa'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { serverURL } from '../App'
+import { serverURL } from '../config/api'
 import useGetMyShop from '../hooks/useGetMyShop'
 
 export default function AddItem() {
@@ -20,7 +20,10 @@ export default function AddItem() {
   const [backendImage, setBackendImage] = useState(null)
 
   // static categories list
-  const categories = useMemo(() => ['Snack', 'Main course', 'Dessert', 'Others'], [])
+  const categories = useMemo(
+    () => ['Snack', 'Main course', 'Dessert', 'Others'],
+    []
+  )
 
   // When shop data arrives, pick a default category
   useEffect(() => {

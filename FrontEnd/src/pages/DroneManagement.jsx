@@ -7,7 +7,7 @@ import useGetShopDrones from '../hooks/useGetShopDrones'
 import DroneCard from '../components/DroneCard'
 import Toast from '../components/Toast'
 import axios from 'axios'
-import { serverURL } from '../App'
+import { serverURL } from '../config/api'
 
 function DroneManagement() {
   const navigate = useNavigate()

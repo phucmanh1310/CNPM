@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { serverURL } from '../App'
+import { serverURL } from '../config/api'
 
 function useGetUserOrders() {
   const [userOrders, setUserOrders] = useState([])

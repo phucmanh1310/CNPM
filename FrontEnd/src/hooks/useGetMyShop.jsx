@@ -2,7 +2,7 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffect, useCallback } from 'react'
 import axios from 'axios'
-import { serverURL } from '../App'
+import { serverURL } from '../config/api'
 import { setMyShopData } from '../redux/ownerSlice'
 
 function useGetMyShop() {

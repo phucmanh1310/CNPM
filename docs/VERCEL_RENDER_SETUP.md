@@ -1,8 +1,13 @@
 # Quick Deployment Guide - Vercel + Render
 
+làm theo video của https://www.youtube.com/watch?v=mjU6bT3JgHw +
+https://www.youtube.com/watch?v=N48cnnDCOp8
+hoặc các hướng dẫn bên dưới
+
 ## 🚀 Tổng quan
 
 Stack deployment:
+
 - **Frontend**: Vercel (React + Vite)
 - **Backend**: Render (Node.js + Express)
 - **Database**: MongoDB Atlas (Free tier)
@@ -75,8 +80,8 @@ Region: Singapore
 Branch: main
 Root Directory: BackEnd
 Runtime: Node
-Build Command: npm ci
-Start Command: node index.js
+Build Command: yarn
+Start Command: yarn production
 Instance Type: Free
 ```
 
@@ -99,27 +104,18 @@ MOMO_PARTNER_CODE=<your-momo-partner-code>
 MOMO_SECRET_KEY=<your-momo-secret-key>
 ```
 
-**Generate JWT_SECRET:**
-```bash
-# PowerShell
--join ((65..90) + (97..122) + (48..57) | Get-Random -Count 64 | % {[char]$_})
-
-# Bash/Linux
-openssl rand -base64 64 | tr -d '\n'
-```
-
 ### Bước 4: Deploy
 
 1. Click **"Create Web Service"**
 2. Đợi 5-10 phút để build & deploy
-3. Sau khi deploy xong, copy URL: `https://ktpm-backend.onrender.com`
+3. Sau khi deploy xong, copy URL: vd:`https://ktpm-backend.onrender.com`
 
 ### Bước 5: Test Backend
 
 ```bash
 # Health check
-curl https://ktpm-backend.onrender.com/health
-
+curl https://cnpm-6sgw.onrender.com/health
+cur
 # Expected response:
 # {"status":"ok","timestamp":"..."}
 ```
@@ -140,7 +136,7 @@ curl https://ktpm-backend.onrender.com/health
 ### Bước 2: Configure Project
 
 ```
-Project Name: ktpm-frontend
+Project Name:
 Framework Preset: Vite
 Root Directory: FrontEnd
 Build Command: npm run build
@@ -154,7 +150,7 @@ Click **"Environment Variables"**:
 
 ```
 Name: VITE_API_URL
-Value: https://ktpm-backend.onrender.com
+Value: https://cnpm-6sgw.onrender.com
 ```
 
 ### Bước 4: Deploy
@@ -165,7 +161,7 @@ Value: https://ktpm-backend.onrender.com
 
 ### Bước 5: Test Frontend
 
-1. Mở browser: `https://ktpm-frontend.vercel.app`
+1. Mở browser: `https://cnpm-ten.vercel.app`
 2. Kiểm tra console (F12) → không có errors
 3. Test login/register
 
@@ -193,10 +189,12 @@ vercel whoami
 ```
 
 Copy từ `.vercel/project.json`:
+
 - `projectId` → `VERCEL_PROJECT_ID`
 - `orgId` → `VERCEL_ORG_ID`
 
 Get Vercel Token:
+
 1. https://vercel.com/account/tokens
 2. **"Create Token"** → Copy
 
@@ -294,11 +292,11 @@ Code Change → Push to GitHub → GitHub Actions → Auto Deploy
    - First request after sleep takes ~30 seconds (cold start)
    - Solution: Use cron job to ping every 14 minutes
 
-2. **Environment Variables**: 
+2. **Environment Variables**:
    - Frontend cần prefix `VITE_` cho variables
    - Backend không cần prefix
 
-3. **CORS**: 
+3. **CORS**:
    - Đảm bảo backend allow origin từ Vercel domain
    - Update trong `BackEnd/index.js`
 
@@ -353,6 +351,7 @@ https://github.com/phucmanh1310/CNPM/actions
 ---
 
 **Need help?** Check:
+
 - Vercel Docs: https://vercel.com/docs
 - Render Docs: https://render.com/docs
 - MongoDB Atlas Docs: https://www.mongodb.com/docs/atlas/

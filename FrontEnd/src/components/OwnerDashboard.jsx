@@ -8,7 +8,7 @@ import { FaPen } from 'react-icons/fa6'
 import { FaThLarge, FaBars } from 'react-icons/fa'
 import useGetMyShop from '../hooks/useGetMyShop'
 import OwnerItemCard from './OwnerItemCard'
-import { serverURL } from '../App'
+import { serverURL } from '../config/api'
 
 export default function OwnerDashboard() {
   const navigate = useNavigate()

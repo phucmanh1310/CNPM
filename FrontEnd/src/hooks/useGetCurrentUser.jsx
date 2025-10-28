@@ -2,7 +2,7 @@
 import { useEffect, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import axios from 'axios'
-import { serverURL } from '../App'
+import { serverURL } from '../config/api'
 import { setUserData } from '../redux/userSlice'
 
 function useGetCurrentUser() {

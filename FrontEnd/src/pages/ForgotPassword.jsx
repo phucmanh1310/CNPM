@@ -2,7 +2,7 @@ import React from 'react'
 import { IoMdArrowRoundBack } from 'react-icons/io'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { serverURL } from '../App'
+import { serverURL } from '../config/api'
 import {} from 'react-spinners'
 
 function ForgotPassword() {

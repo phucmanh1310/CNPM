@@ -24,8 +24,6 @@ import PaymentSuccess from './pages/PaymentSuccess.jsx'
 import AdminLogin from './pages/AdminLogin.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
 
-export const serverURL = 'http://localhost:8000'
-
 function App() {
   useGetCurrentUser()
   useGetCity()

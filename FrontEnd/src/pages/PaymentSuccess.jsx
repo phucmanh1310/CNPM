@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { FaCheckCircle, FaTimesCircle, FaSpinner } from 'react-icons/fa'
 import axios from 'axios'
-import { serverURL } from '../App'
+import { serverURL } from '../config/api'
 
 function PaymentSuccess() {
   const navigate = useNavigate()
