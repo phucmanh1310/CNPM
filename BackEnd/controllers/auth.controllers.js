@@ -39,9 +39,10 @@ export const signUp = async (req, res) => {
     })
 
     const token = await genToken(user._id)
+    const isProd = process.env.NODE_ENV === 'production'
     res.cookie('token', token, {
-      secure: false,
-      sameSite: 'strict',
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
       httpOnly: true,
     })
@@ -76,9 +77,10 @@ export const signIn = async (req, res) => {
     }
 
     const token = await genToken(user._id)
+    const isProd = process.env.NODE_ENV === 'production'
     res.cookie('token', token, {
-      secure: false,
-      sameSite: 'strict',
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
       httpOnly: true,
     })
@@ -97,7 +99,11 @@ export const signIn = async (req, res) => {
 
 export const signOut = async (req, res) => {
   try {
-    res.clearCookie('token')
+    const isProd = process.env.NODE_ENV === 'production'
+    res.clearCookie('token', {
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+    })
     return res.status(200).json({ message: 'Log out successfully' })
   } catch (error) {
     return res.status(500).json(`sign Out error ${error}`)
