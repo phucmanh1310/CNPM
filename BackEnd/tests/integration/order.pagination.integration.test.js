@@ -3,7 +3,7 @@ import { setupTestDB, teardownTestDB, app } from './setup.js'
 import Order from '../../models/order.model.js'
 import User from '../../models/user.model.js'
 import Shop from '../../models/shop.model.js'
-import genToken from '../../utils/token.js'
+import { hashPassword, generateToken } from '../../utils/auth.js'
 
 describe('Order Pagination & Statistics Integration Tests', () => {
   let customerToken, shopOwnerToken
@@ -17,23 +17,23 @@ describe('Order Pagination & Statistics Integration Tests', () => {
     const customer = await User.create({
       fullName: 'Test Customer',
       email: 'customer.pagination@test.com',
-      password: 'password123',
+      password: await hashPassword('password123'),
       mobile: '1234567890',
       role: 'user',
     })
     customerId = customer._id
-    customerToken = await genToken(customerId)
+    customerToken = generateToken(customerId, 'user')
 
     // Create test shop owner
     const shopOwner = await User.create({
       fullName: 'Test Shop Owner',
       email: 'shopowner.pagination@test.com',
-      password: 'password123',
+      password: await hashPassword('password123'),
       mobile: '0987654321',
       role: 'owner',
     })
     shopOwnerId = shopOwner._id
-    shopOwnerToken = await genToken(shopOwnerId)
+    shopOwnerToken = generateToken(shopOwnerId, 'owner')
 
     // Create test shop
     const shop = await Shop.create({
@@ -159,11 +159,11 @@ describe('Order Pagination & Statistics Integration Tests', () => {
       const newOwner = await User.create({
         fullName: 'Empty Owner',
         email: 'empty.owner@test.com',
-        password: 'password123',
+        password: await hashPassword('password123'),
         mobile: '5555555555',
         role: 'owner',
       })
-      const emptyOwnerToken = await genToken(newOwner._id)
+      const emptyOwnerToken = generateToken(newOwner._id, 'owner')
 
       const response = await request(app)
         .get('/api/order/getOwnerOrdersPaginated')
