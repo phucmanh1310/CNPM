@@ -151,7 +151,12 @@ Click **"Environment Variables"**:
 ```
 Name: VITE_API_URL
 Value: https://cnpm-6sgw.onrender.com
+
+Name: VITE_GEOAPIKEY
+Value: get in website
 ```
+
+> **Note**: Get your free Geoapify API key at https://www.geoapify.com/ (3000 requests/day)
 
 ### Bước 4: Deploy
 
