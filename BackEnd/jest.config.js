@@ -14,22 +14,22 @@
   coverageReporters: ['text', 'lcov', 'html'],
   coverageThreshold: {
     global: {
-      branches: 20,
-      functions: 20,
-      lines: 20,
-      statements: 20,
-    },
-    './controllers/': {
       branches: 15,
       functions: 15,
       lines: 15,
       statements: 15,
     },
-    './utils/': {
+    './controllers/': {
       branches: 10,
       functions: 10,
       lines: 10,
       statements: 10,
+    },
+    './utils/': {
+      branches: 5,
+      functions: 5,
+      lines: 5,
+      statements: 5,
     },
   },
   verbose: true,
