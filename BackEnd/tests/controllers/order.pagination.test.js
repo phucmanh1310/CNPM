@@ -238,8 +238,7 @@ describe('Order Pagination Controller', () => {
 
   describe('getShopRevenueStats', () => {
     it('should return revenue statistics for shop owner', async () => {
-      req.userId = 'owner123'
-
+      // Use validObjectId from beforeEach, no need to override
       const mockStats = [
         { _id: '2025-11-01', totalRevenue: 500, orderCount: 5 },
         { _id: '2025-11-02', totalRevenue: 300, orderCount: 3 },
