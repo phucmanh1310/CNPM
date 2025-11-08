@@ -42,6 +42,8 @@ describe('Order Pagination & Statistics Integration Tests', () => {
       name: 'Test Shop for Pagination',
       owner: shopOwnerId,
       city: 'Ho Chi Minh City',
+      state: 'Ho Chi Minh',
+      address: '123 Test Street',
       image: 'test-shop.jpg',
     })
     shopId = shop._id
