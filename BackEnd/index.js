@@ -9,6 +9,7 @@ import cors from 'cors'
 import shopRouter from './routes/shop.routes.js'
 import itemRouter from './routes/item.routes.js'
 import orderRouter from './routes/order.routes.js'
+import cartRouter from './routes/cart.routes.js'
 import droneRouter from './routes/drone.routes.js'
 import paymentRouter from './routes/payment.routes.js'
 import adminRouter from './routes/admin.routes.js'
@@ -73,6 +74,7 @@ app.get('/', (req, res) => {
       shops: '/api/shop',
       items: '/api/item',
       orders: '/api/order',
+      cart: '/api/cart',
       drones: '/api/drone',
       payment: '/api/payment',
       admin: '/api/admin',
@@ -86,6 +88,7 @@ app.use('/api/user', userRouter)
 app.use('/api/shop', shopRouter)
 app.use('/api/item', itemRouter)
 app.use('/api/order', orderRouter)
+app.use('/api/cart', cartRouter)
 app.use('/api/drone', droneRouter)
 app.use('/api/payment', paymentRouter)
 app.use('/api/admin', adminRouter)

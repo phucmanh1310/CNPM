@@ -3,30 +3,61 @@ import Order from '../models/order.model.js'
 import mongoose from 'mongoose'
 import { autoReleaseDrone } from './drone.controller.js'
 
+import Cart from '../models/cart.model.js'
+import Item from '../models/item.model.js'
+
 export const placeOrder = async (req, res) => {
   try {
     const { cartItems, paymentMethod, deliveryAddress } = req.body
-    if (cartItems.length == 0 || !cartItems) {
+    if (!cartItems || cartItems.length === 0) {
       return res.status(400).json({ message: 'Cart is empty' })
     }
     if (
-      !deliveryAddress.text ||
-      !deliveryAddress.latitude ||
-      !deliveryAddress.longitude
+      !deliveryAddress?.text ||
+      deliveryAddress?.latitude == null ||
+      deliveryAddress?.longitude == null
     ) {
       return res.status(400).json({ message: 'Delivery address is required' })
     }
-    for (const item of cartItems) {
-      if (!item.shop || !item.id) {
-        return res
-          .status(400)
-          .json({ message: 'Invalid cart item: missing shop or id' })
-      }
+    // Normalize incoming cart: trust only item id + quantity; validate against DB for price/name/shop
+    const requestedItems = cartItems.map((i) => ({
+      id: i.id || i.item || i.itemId,
+      quantity: Number(i.quantity) || 1,
+    }))
+    const invalidItem = requestedItems.find((i) => !i.id || i.quantity <= 0)
+    if (invalidItem) {
+      return res.status(400).json({
+        message: 'Invalid cart item: id and positive quantity are required',
+      })
     }
 
-    // Group items by shop
+    const uniqueIds = [...new Set(requestedItems.map((i) => i.id))]
+    const dbItems = await Item.find({ _id: { $in: uniqueIds } }).select(
+      'name price shop'
+    )
+    const dbMap = new Map(dbItems.map((it) => [it._id.toString(), it]))
+
+    // Build secure items list using DB values only
+    const secureItems = []
+    for (const reqItem of requestedItems) {
+      const dbItem = dbMap.get(reqItem.id.toString())
+      if (!dbItem) {
+        return res
+          .status(400)
+          .json({ message: `Item not found: ${reqItem.id}` })
+      }
+      secureItems.push({
+        id: dbItem._id,
+        name: dbItem.name,
+        price: Number(dbItem.price) || 0,
+        quantity: Number(reqItem.quantity) || 1,
+        shop: dbItem.shop?.toString(),
+      })
+    }
+
+    // Group items by shop (from DB)
     const groupItemsByShop = {}
-    cartItems.forEach((item) => {
+    secureItems.forEach((item) => {
       const shopId = item.shop
       if (!groupItemsByShop[shopId]) {
         groupItemsByShop[shopId] = []
@@ -64,20 +95,25 @@ export const placeOrder = async (req, res) => {
             shop: shop._id,
             owner: shop.owner._id,
             subtotal,
-            shopOrderItems: items.map((i) => {
-              return {
-                item: i.id,
-                price: i.price,
-                quantity: i.quantity,
-                name: i.name,
-              }
-            }),
+            shopOrderItems: items.map((i) => ({
+              item: i.id,
+              price: i.price,
+              quantity: i.quantity,
+              name: i.name,
+            })),
           },
         ],
       })
 
       createdOrders.push(order)
     }
+
+    // Clear user's cart after successful order placement
+    await Cart.findOneAndUpdate(
+      { user: req.userId },
+      { items: [] },
+      { upsert: false }
+    )
 
     return res.status(201).json({
       message: 'Orders placed successfully',
@@ -448,7 +484,7 @@ export const getUserSpendingStats = async (req, res) => {
           _id: {
             $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
           },
-          totalSpent: { $sum: '$total' },
+          totalSpent: { $sum: '$totalAmount' },
           orderCount: { $sum: 1 },
         },
       },

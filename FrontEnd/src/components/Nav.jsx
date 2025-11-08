@@ -24,6 +24,9 @@ function Nav() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
+  // Debug logging
+  // console.log('🔍 Nav userData:', userData)
+
   // Hook để lấy số lượng đơn hàng pending cho owner
   const { orderCount } = useGetOwnerOrderCount()
 

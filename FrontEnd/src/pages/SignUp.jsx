@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { ClipLoader } from 'react-spinners'
 // import authRouter from "./routes/auth.routes.js";
-import axios from 'axios'
+import axios from '../utils/axios'
 import { useDispatch } from 'react-redux'
 import { setUserData } from '../redux/userSlice'
 
@@ -67,7 +67,7 @@ function SignUp() {
     }
     setLoading(true)
     try {
-      const result = await axios.post(`/api/auth/signup`, {
+      const result = await axios.post(`/auth/signup`, {
         fullName,
         email,
         password,

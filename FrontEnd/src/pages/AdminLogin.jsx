@@ -2,6 +2,7 @@ import React from 'react'
 import { useState } from 'react'
 import { FaRegEye } from 'react-icons/fa'
 import { FaRegEyeSlash } from 'react-icons/fa'
+import { FaShieldAlt } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 
 import { ClipLoader } from 'react-spinners'
@@ -10,8 +11,9 @@ import { useDispatch } from 'react-redux'
 import { setUserData } from '../redux/userSlice'
 
 function AdminLogin() {
-  const primaryColor = '#00BFFF'
-  const bgcolor = '#fff9f6'
+  // Distinct admin theming
+  const primaryColor = '#7C3AED' // purple for admin
+  const bgcolor = '#f8fafc' // slate-50
   const borderColor = '#ddd'
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
@@ -24,10 +26,20 @@ function AdminLogin() {
   const handleAdminLogin = async () => {
     setLoading(true)
     try {
-      const result = await axios.post(`/api/auth/signin`, { email, password })
+      const result = await axios.post(
+        `/api/auth/signin`,
+        { email, password },
+        { withCredentials: true }
+      )
 
       // Kiểm tra nếu user có role admin
       if (result.data.user.role !== 'admin') {
+        // Clear any non-admin session cookie to avoid logging in as user here
+        try {
+          await axios.get(`/api/auth/signout`, { withCredentials: true })
+        } catch {
+          // ignore signout cleanup errors
+        }
         setErr('Access denied. Admin privileges required.')
         setLoading(false)
         return
@@ -56,12 +68,15 @@ function AdminLogin() {
       style={{ backgroundColor: bgcolor }}
     >
       <div
-        className="bg-white rounded-xl shadow-lg w-full max-w-md p-8 border-[1px]"
+        className="bg-white rounded-xl shadow-lg w-full max-w-md p-8 border"
         style={{ border: `1px solid ${borderColor}` }}
       >
-        <h1 className="text-3xl font-bold mb-2" style={{ color: primaryColor }}>
-          ADMIN LOGIN
-        </h1>
+        <div className="flex items-center gap-2 mb-2">
+          <FaShieldAlt size={26} color={primaryColor} />
+          <h1 className="text-3xl font-bold" style={{ color: primaryColor }}>
+            Admin Portal
+          </h1>
+        </div>
         <p className="text-grey-600 mb-8">
           Sign in to access the admin dashboard and manage the system.
         </p>
@@ -78,7 +93,7 @@ function AdminLogin() {
             type="email"
             className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500"
             placeholder="Enter admin email"
-            style={{ border: '1px solid ${borderColor}' }}
+            style={{ border: `1px solid ${borderColor}` }}
             onChange={(e) => setEmail(e.target.value)}
             value={email}
             required
@@ -98,14 +113,14 @@ function AdminLogin() {
               type={showPassword ? 'text' : 'password'}
               className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500"
               placeholder="Enter admin password"
-              style={{ border: '1px solid ${borderColor}' }}
+              style={{ border: `1px solid ${borderColor}` }}
               onChange={(e) => setPassword(e.target.value)}
               value={password}
               required
             />
 
             <button
-              className="absolute right-3 cursor-pointer top-[14px] text-gray-500"
+              className="absolute right-3 cursor-pointer top-3.5 text-gray-500"
               onClick={() => setShowPassword((prev) => !prev)}
             >
               {!showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
@@ -114,23 +129,14 @@ function AdminLogin() {
         </div>
 
         <button
-          className={
-            'w-full font-semibold py-2 rounded-lg transition duration-200 bg-[#00BFFF] text-white hover:bg-[#00BFFF] cursor-pointer'
-          }
+          className="w-full font-semibold py-2 rounded-lg transition duration-200 bg-purple-600 text-white hover:bg-purple-700 cursor-pointer"
           onClick={handleAdminLogin}
           disabled={loading}
         >
           {loading ? <ClipLoader color="white" size={20} /> : 'ADMIN LOGIN'}
         </button>
 
-        {err && <p className="text-red-500 text-center my-[10px]">{err}</p>}
-
-        <p
-          className="text-center mt-2 cursor-pointer"
-          onClick={() => navigate('/signin')}
-        >
-          Regular user? <span className="text-[#00BFFF]"> Sign In</span>
-        </p>
+        {err && <p className="text-red-500 text-center my-2.5">{err}</p>}
       </div>
     </div>
   )

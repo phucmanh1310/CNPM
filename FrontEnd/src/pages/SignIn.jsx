@@ -49,22 +49,47 @@ function SignIn() {
   const handleSignIn = async () => {
     setLoading(true)
     try {
-      const result = await axios.post(`/api/auth/signin`, { email, password })
+      const result = await axios.post(
+        `/api/auth/signin`,
+        { email, password },
+        {
+          withCredentials: true,
+        }
+      )
 
-      // ✅ Dispatch dữ liệu user vào Redux
-      dispatch(setUserData(result.data.user)) // Chú ý: result.data.user, không phải result.data
+      console.log('🔍 Full response:', result)
+      console.log('🔍 Response data:', result.data)
+      console.log('🔍 User data:', result.data.user)
+
+      // Nếu là admin, chặn đăng nhập tại trang này và yêu cầu dùng Admin Login
+      if (result.data.user.role === 'admin') {
+        try {
+          await axios.get(`/api/auth/signout`, { withCredentials: true })
+        } catch {
+          // ignore signout cleanup errors
+        }
+        setErr('Please use the Admin Login page to sign in as admin.')
+        setLoading(false)
+        return
+      }
+
+      // ✅ Dispatch dữ liệu user vào Redux (chỉ user/owner)
+      dispatch(setUserData(result.data.user))
 
       console.log('Signin success:', result.data)
+
+      // Force a small delay to ensure Redux state updates
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
       setErr('')
       setLoading(false)
 
-      // ✅ Navigate dựa trên role
-      if (result.data.user.role === 'admin') {
-        navigate('/admin', { replace: true })
-      } else if (result.data.user.role === 'owner') {
-        navigate('/owner', { replace: true })
+      // ✅ Navigate dựa trên role (owner/user)
+      if (result.data.user.role === 'owner') {
+        // Redirect owners to home, '/owner' route doesn't exist
+        navigate('/', { replace: true })
       } else {
-        navigate('/user', { replace: true })
+        navigate('/', { replace: true }) // User role goes to homepage
       }
     } catch (error) {
       setErr(error?.response?.data?.message)
@@ -78,7 +103,7 @@ function SignIn() {
       style={{ backgroundColor: bgcolor }}
     >
       <div
-        className="bg-white rounded-xl shadow-lg w-full max-w-md p-8 border-[1px]"
+        className="bg-white rounded-xl shadow-lg w-full max-w-md p-8 border"
         style={{ border: `1px solid ${borderColor}` }}
       >
         <h1 className="text-3xl font-bold mb-2" style={{ color: primaryColor }}>
@@ -100,7 +125,7 @@ function SignIn() {
             type="email"
             className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500"
             placeholder="Enter your Email"
-            style={{ border: '1px solid ${borderColor}' }}
+            style={{ border: `1px solid ${borderColor}` }}
             onChange={(e) => setEmail(e.target.value)}
             value={email}
             required
@@ -120,14 +145,14 @@ function SignIn() {
               type={showPassword ? 'text' : 'password'}
               className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500"
               placeholder="Enter your Password"
-              style={{ border: '1px solid ${borderColor}' }}
+              style={{ border: `1px solid ${borderColor}` }}
               onChange={(e) => setPassword(e.target.value)}
               value={password}
               required
             />
 
             <button
-              className="absolute right-3 cursor-pointer top-[14px] text-gray-500"
+              className="absolute right-3 cursor-pointer top-3.5 text-gray-500"
               onClick={() => setShowPassword((prev) => !prev)}
             >
               {!showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
@@ -149,7 +174,7 @@ function SignIn() {
         >
           {loading ? <ClipLoader color="white" size={20} /> : 'Sign In'}
         </button>
-        <p className="text-red-500 text-center my-[10px]">*{err}</p>
+        <p className="text-red-500 text-center my-2.5">*{err}</p>
         <p
           className="text-center mt-2 cursor-pointer"
           onClick={() => navigate('/signup')}
@@ -159,6 +184,12 @@ function SignIn() {
             {' '}
             Want to create a new account?
           </span>{' '}
+        </p>
+        <p
+          className="text-center mt-2 cursor-pointer text-sm text-gray-600 hover:text-[#00BFFF]"
+          onClick={() => navigate('/admin-login')}
+        >
+          Are you an admin? <span className="font-semibold">Admin Login</span>
         </p>
       </div>
     </div>

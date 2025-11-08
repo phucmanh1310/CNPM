@@ -5,11 +5,11 @@ import userSlice from './userSlice.js'
 import ownerSlice from './ownerSlice.js'
 import mapSlice from './mapSlice.js'
 
-// Persist config for user slice (only cartItems)
+// Persist config for user slice (exclude cartItems since it's now server-side)
 const userPersistConfig = {
   key: 'user',
   storage,
-  whitelist: ['cartItems'], // Only persist cartItems
+  blacklist: ['cartItems'], // Don't persist cartItems anymore
 }
 
 const persistedUserReducer = persistReducer(userPersistConfig, userSlice)

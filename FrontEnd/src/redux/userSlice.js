@@ -10,7 +10,7 @@ const userSlice = createSlice({
     currentAddress: null,
     shopsInMyCity: null,
     itemsInMyCity: null,
-    cartItems: [], // ← SỬA: Mảng trống thay vì [{...}]
+    cartItems: [], // Cart items now managed server-side
   },
   reducers: {
     setUserData: (state, action) => {

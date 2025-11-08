@@ -16,10 +16,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy to Render
-        env:
-          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
-          RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
         run: |
+          RENDER_API_KEY="${{ secrets.RENDER_API_KEY }}"
+          RENDER_SERVICE_ID="${{ secrets.RENDER_SERVICE_ID }}"
+          if [ -z "$RENDER_API_KEY" ] || [ -z "$RENDER_SERVICE_ID" ]; then
+            echo "Render secrets missing; skipping deploy trigger";
+            exit 0;
+          fi
           curl -X POST \
             "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
             -H "Authorization: Bearer $RENDER_API_KEY" \
@@ -30,7 +33,11 @@ jobs:
         run: sleep 60
 
       - name: Health Check
-        if: ${{ secrets.BACKEND_URL != '' }}
         run: |
-          curl -f ${{ secrets.BACKEND_URL }}/health || exit 1
-          echo "Backend deployed successfully!"
+          BACKEND_URL="${{ secrets.BACKEND_URL }}"
+          if [ -n "$BACKEND_URL" ]; then
+            curl -f "$BACKEND_URL/health" || exit 1
+            echo "Backend deployed successfully!"
+          else
+            echo "BACKEND_URL not set; skipping health check"
+          fi

@@ -165,7 +165,7 @@ function UserDashboard() {
       <Nav />
 
       {/* ==================== Categories Section ==================== */}
-      <div className="w-full max-w-6xl flex flex-col gap-5 items-start p-[10px]">
+      <div className="w-full max-w-6xl flex flex-col gap-5 items-start p-2.5">
         <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-gray-800 text-2xl sm:text-3xl">
             Inspiration for your first order
@@ -210,7 +210,7 @@ function UserDashboard() {
       </div>
 
       {/* ==================== Shops Section ==================== */}
-      <div className="w-full max-w-6xl flex flex-col gap-5 items-start p-[10px]">
+      <div className="w-full max-w-6xl flex flex-col gap-5 items-start p-2.5">
         <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-gray-800 text-2xl sm:text-3xl">
             The store should try in {currentCity}
@@ -250,7 +250,7 @@ function UserDashboard() {
       </div>
 
       {/* ==================== Food Items Section ==================== */}
-      <div className="w-full max-w-6xl flex flex-col gap-5 items-start p-[10px]">
+      <div className="w-full max-w-6xl flex flex-col gap-5 items-start p-2.5">
         <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-gray-800 text-2xl sm:text-3xl">
             Suggested Food Items
@@ -475,7 +475,7 @@ function UserDashboard() {
 
       {/* ==================== Popular Items Section ==================== */}
       {filteredItems.length > 0 && (
-        <div className="w-full max-w-6xl flex flex-col gap-5 items-start p-[10px]">
+        <div className="w-full max-w-6xl flex flex-col gap-5 items-start p-2.5">
           <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <h1 className="text-gray-800 text-2xl sm:text-3xl">
               Popular in {currentCity}

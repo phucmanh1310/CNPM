@@ -8,10 +8,6 @@ on:
       - "FrontEnd/**"
   workflow_dispatch:
 
-env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -30,24 +26,45 @@ jobs:
         run: npm install --global vercel@latest
 
       - name: Pull Vercel Environment Information
-        if: ${{ secrets.VERCEL_TOKEN != '' }}
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: ./FrontEnd
+        run: |
+          VERCEL_TOKEN="${{ secrets.VERCEL_TOKEN }}"
+          VERCEL_ORG_ID="${{ secrets.VERCEL_ORG_ID }}"
+          VERCEL_PROJECT_ID="${{ secrets.VERCEL_PROJECT_ID }}"
+          if [ -n "$VERCEL_TOKEN" ]; then
+            vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+          else
+            echo "VERCEL_TOKEN not set; skipping vercel pull"
+          fi
 
       - name: Build Project Artifacts
-        if: ${{ secrets.VERCEL_TOKEN != '' }}
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: ./FrontEnd
-        env:
-          VITE_API_URL: ${{ secrets.BACKEND_URL }}
+        run: |
+          VERCEL_TOKEN="${{ secrets.VERCEL_TOKEN }}"
+          VITE_API_URL="${{ secrets.BACKEND_URL }}"
+          export VITE_API_URL
+          if [ -n "$VERCEL_TOKEN" ]; then
+            vercel build --prod --token="$VERCEL_TOKEN"
+          else
+            echo "VERCEL_TOKEN not set; skipping vercel build"
+          fi
 
       - name: Deploy Project Artifacts to Vercel
-        if: ${{ secrets.VERCEL_TOKEN != '' }}
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: ./FrontEnd
+        run: |
+          VERCEL_TOKEN="${{ secrets.VERCEL_TOKEN }}"
+          if [ -n "$VERCEL_TOKEN" ]; then
+            vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+          else
+            echo "VERCEL_TOKEN not set; skipping vercel deploy"
+          fi
 
       - name: Health Check
-        if: ${{ secrets.FRONTEND_URL != '' }}
         run: |
+          FRONTEND_URL="${{ secrets.FRONTEND_URL }}"
           sleep 10
-          curl -f ${{ secrets.FRONTEND_URL }} || exit 1
+          if [ -n "$FRONTEND_URL" ]; then
+            curl -f "$FRONTEND_URL" || exit 1
+          else
+            echo "FRONTEND_URL not set; skipping health check"
+          fi

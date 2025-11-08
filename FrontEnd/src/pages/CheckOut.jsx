@@ -24,7 +24,7 @@ import {
   setLocation,
   reverseGeocodeFromCoordinates,
 } from '../redux/mapSlice'
-import { clearCart } from '../redux/userSlice'
+import { useCart } from '../hooks/useCart'
 import { ClipLoader } from 'react-spinners'
 import axios from 'axios'
 
@@ -110,7 +110,7 @@ function CheckOut() {
   const dispatch = useDispatch()
   const { location, address, suggestions, loading, searchLoading } =
     useSelector((state) => state.map)
-  const { cartItems, currentAddress } = useSelector((state) => state.user)
+  const { cartItems, currentAddress, clearCartItems } = useCart()
   const [inputAddress, setInputAddress] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('cod')
   const [mapType, setMapType] = useState('roadmap') // roadmap, satellite, terrain
@@ -247,7 +247,7 @@ function CheckOut() {
 
           if (paymentResult.data.success) {
             // Clear cart before redirecting to MoMo
-            dispatch(clearCart())
+            clearCartItems()
 
             // Save payment ID to localStorage for later retrieval
             localStorage.setItem(
@@ -271,7 +271,7 @@ function CheckOut() {
         }
       } else {
         // COD payment - clear cart and navigate to success page
-        dispatch(clearCart())
+        clearCartItems()
         navigate('/order-placed', {
           state: {
             orders: result.data.orders,
@@ -289,7 +289,7 @@ function CheckOut() {
   return (
     <div className="min-h-screen bg-[#fff9f6] flex items-center justify-center p-6">
       {/* Back Button */}
-      <div className="absolute top-[20px] left-[20px] z-[1000]">
+      <div className="absolute top-5 left-5 z-1000">
         <button
           className="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 hover:bg-gray-50"
           onClick={() => navigate('/cart')}
@@ -367,7 +367,7 @@ function CheckOut() {
                       className="flex items-start gap-3 p-3 cursor-pointer hover:bg-blue-50 rounded-lg transition-colors group"
                       onClick={() => onPickSuggestion(s)}
                     >
-                      <div className="flex-shrink-0 mt-1">
+                      <div className="shrink-0 mt-1">
                         <FaMapMarkerAlt
                           className="text-[#00BFFF] group-hover:text-blue-600"
                           size={14}
@@ -505,9 +505,9 @@ function CheckOut() {
             </div>
 
             {/* Hiển thị địa chỉ với UI đẹp hơn */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-3 border-t">
+            <div className="bg-linear-to-r from-blue-50 to-indigo-50 px-4 py-3 border-t">
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <FaMapMarkerAlt className="text-[#00BFFF] mt-1" size={16} />
                 </div>
                 <div className="flex-1">

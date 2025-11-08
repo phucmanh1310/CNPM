@@ -1,7 +1,6 @@
 // src/pages/CartPage.jsx
 import React, { useState } from 'react' // ← THÊM useState
-import { useSelector, useDispatch } from 'react-redux'
-import { clearCart } from '../redux/userSlice'
+import { useCart } from '../hooks/useCart'
 import { useNavigate } from 'react-router-dom'
 import { IoIosArrowRoundBack } from 'react-icons/io'
 import CartItemCard from '../components/CartItemCard'
@@ -10,8 +9,7 @@ import Toast from '../components/Toast'
 
 function CartPage() {
   const navigate = useNavigate()
-  const dispatch = useDispatch()
-  const { cartItems } = useSelector((state) => state.user)
+  const { cartItems, clearCartItems } = useCart()
 
   // ← THÊM state cho modal và toast
   const [showClearConfirm, setShowClearConfirm] = useState(false)
@@ -32,8 +30,8 @@ function CartPage() {
     setToast({ show: true, message, type })
   }
 
-  const handleClearCart = () => {
-    dispatch(clearCart())
+  const handleClearCart = async () => {
+    await clearCartItems()
     setShowClearConfirm(false)
     showToast('Cart cleared successfully!', 'info')
   }
@@ -42,8 +40,8 @@ function CartPage() {
     <div className="min-h-screen bg-[#fff9f6] flex justify-center p-6">
       <div className="w-full max-w-[800px]">
         {/* Header */}
-        <div className="flex items-center gap-[20px] mb-6">
-          <div className="z-[10] cursor-pointer" onClick={() => navigate('/')}>
+        <div className="flex items-center gap-5 mb-6">
+          <div className="z-10 cursor-pointer" onClick={() => navigate('/')}>
             <IoIosArrowRoundBack size={35} className="text-[#00BFFF]" />
           </div>
           <h1 className="text-2xl font-bold text-start">Your Cart</h1>

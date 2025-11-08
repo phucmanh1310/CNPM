@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Axios withCredentials</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+    <h1>Test Authentication</h1>
+    <button onclick="testLogin()">Test Login</button>
+    <button onclick="testGetUser()">Test Get Current User</button>
+    <pre id="output"></pre>
+
+    <script>
+      const axiosInstance = axios.create({
+        baseURL: 'http://localhost:8000/api',
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      async function testLogin() {
+        try {
+          const result = await axiosInstance.post('/auth/signin', {
+            email: 'phucmanhtran08@gmail.com',
+            password: '123456',
+          })
+          document.getElementById('output').textContent =
+            'Login Success:\n' + JSON.stringify(result.data, null, 2)
+        } catch (error) {
+          document.getElementById('output').textContent =
+            'Login Error:\n' +
+            JSON.stringify(error.response?.data || error.message, null, 2)
+        }
+      }
+
+      async function testGetUser() {
+        try {
+          const result = await axiosInstance.get('/user/current')
+          document.getElementById('output').textContent =
+            'Get User Success:\n' + JSON.stringify(result.data, null, 2)
+        } catch (error) {
+          document.getElementById('output').textContent =
+            'Get User Error:\n' +
+            JSON.stringify(error.response?.data || error.message, null, 2)
+        }
+      }
+    </script>
+  </body>
+</html>

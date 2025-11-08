@@ -1,13 +1,11 @@
 import React, { useState } from 'react'
 import { FaLeaf, FaDrumstickBite, FaStar, FaShoppingCart } from 'react-icons/fa'
 import { FaMinus, FaPlus, FaRegStar } from 'react-icons/fa6'
-import { useDispatch, useSelector } from 'react-redux'
-import { addToCart } from '../redux/userSlice'
+import { useCart } from '../hooks/useCart'
 
 function FoodCard({ data, layout = 'grid' }) {
   const [quantity, setQuantity] = useState(0)
-  const dispatch = useDispatch()
-  const { cartItems } = useSelector((state) => state.user)
+  const { cartItems, addItemToCart } = useCart()
   const isGrid = layout === 'grid'
   const renderStars = (rating) => {
     const stars = []
@@ -33,7 +31,7 @@ function FoodCard({ data, layout = 'grid' }) {
             hover:shadow-lg transition-all duration-300 flex flex-col overflow-hidden"
       >
         {/* Image */}
-        <div className="relative w-full h-[160px]">
+        <div className="relative w-full h-40">
           <img
             src={data.image}
             alt={data.name}
@@ -67,7 +65,7 @@ function FoodCard({ data, layout = 'grid' }) {
           <span className="font-bold text-gray-900 text-sm flex-1 truncate">
             ₫{data.price?.toLocaleString('vi-VN')}
           </span>
-          <div className="flex items-center border rounded-full overflow-hidden shadow-sm flex-shrink-0">
+          <div className="flex items-center border rounded-full overflow-hidden shadow-sm shrink-0">
             <button
               className="px-2 py-1 hover:bg-gray-100 transition"
               onClick={handleDecrease}
@@ -88,19 +86,10 @@ function FoodCard({ data, layout = 'grid' }) {
                   : 'bg-[#00BFFF]'
               } text-white px-3 py-2 transition-colors hover:bg-[#0090cc]`}
               onClick={() => {
-                quantity > 0
-                  ? dispatch(
-                      addToCart({
-                        id: data._id,
-                        name: data.name,
-                        image: data.image,
-                        price: data.price,
-                        quantity,
-                        foodType: data.foodType,
-                        shop: data.shop,
-                      })
-                    )
-                  : null
+                if (quantity > 0) {
+                  addItemToCart(data._id, quantity)
+                  setQuantity(0) // Reset quantity after adding to cart
+                }
               }}
             >
               <FaShoppingCart />
@@ -115,7 +104,7 @@ function FoodCard({ data, layout = 'grid' }) {
   return (
     <div className="w-full bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-all duration-300 flex items-center p-4">
       {/* Image */}
-      <div className="relative w-24 h-24 flex-shrink-0">
+      <div className="relative w-24 h-24 shrink-0">
         <img
           src={data.image}
           alt={data.name}
@@ -168,19 +157,10 @@ function FoodCard({ data, layout = 'grid' }) {
               : 'bg-[#00BFFF]'
           } text-white px-4 py-2 transition-colors hover:bg-[#0090cc]`}
           onClick={() => {
-            quantity > 0
-              ? dispatch(
-                  addToCart({
-                    id: data._id,
-                    name: data.name,
-                    image: data.image,
-                    price: data.price,
-                    quantity,
-                    foodType: data.foodType,
-                    shop: data.shop,
-                  })
-                )
-              : null
+            if (quantity > 0) {
+              addItemToCart(data._id, quantity)
+              setQuantity(0) // Reset quantity after adding to cart
+            }
           }}
         >
           <FaShoppingCart />

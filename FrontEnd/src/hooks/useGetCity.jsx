@@ -52,9 +52,8 @@ function useGetCity() {
           dispatch(setCurrentAddress('TP. Hồ Chí Minh, Việt Nam'))
         }
       },
-      (err) => {
-        console.error('Error getting position:', err)
-        // Fallback to default city when user denies location
+      () => {
+        // Silent fallback to default city when user denies location
         dispatch(setCurrentCity('Ho Chi Minh City'))
         dispatch(setCurrentState(''))
         dispatch(setCurrentAddress('TP. Hồ Chí Minh, Việt Nam'))

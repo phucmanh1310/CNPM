@@ -94,7 +94,13 @@ function App() {
       {/* Admin Routes */}
       <Route
         path="/admin-login"
-        element={!userData ? <AdminLogin /> : <Navigate to="/admin" />}
+        element={
+          userData && userData.role === 'admin' ? (
+            <Navigate to="/admin" />
+          ) : (
+            <AdminLogin />
+          )
+        }
       />
       <Route
         path="/admin"

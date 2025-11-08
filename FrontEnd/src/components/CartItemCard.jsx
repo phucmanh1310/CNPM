@@ -1,13 +1,12 @@
 // src/components/CartItemCard.jsx
 import React, { useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { removeFromCart, updateCartItemQuantity } from '../redux/userSlice'
+import { useCart } from '../hooks/useCart'
 import { FaPlus, FaMinus, FaTrash } from 'react-icons/fa'
 import ConfirmModal from './ConfirmModal'
 import Toast from './Toast'
 
 function CartItemCard({ data }) {
-  const dispatch = useDispatch()
+  const { updateItemQuantity, removeItemFromCart } = useCart()
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
   const [showQuantityConfirm, setShowQuantityConfirm] = useState(false)
   const [toast, setToast] = useState({
@@ -24,28 +23,24 @@ function CartItemCard({ data }) {
     if (data.quantity === 1) {
       setShowQuantityConfirm(true)
     } else {
-      dispatch(
-        updateCartItemQuantity({ id: data.id, quantity: data.quantity - 1 })
-      )
+      updateItemQuantity(data.id, data.quantity - 1)
       showToast('Quantity updated successfully!', 'info')
     }
   }
 
   const handleQuantityIncrease = () => {
-    dispatch(
-      updateCartItemQuantity({ id: data.id, quantity: data.quantity + 1 })
-    )
+    updateItemQuantity(data.id, data.quantity + 1)
     showToast('Quantity updated successfully!', 'info')
   }
 
   const handleRemoveConfirm = () => {
-    dispatch(removeFromCart(data.id))
+    removeItemFromCart(data.id)
     setShowRemoveConfirm(false)
     showToast(`${data.name} removed from cart!`, 'error')
   }
 
   const handleQuantityConfirm = () => {
-    dispatch(removeFromCart(data.id))
+    removeItemFromCart(data.id)
     setShowQuantityConfirm(false)
     showToast(`${data.name} removed from cart!`, 'warning')
   }

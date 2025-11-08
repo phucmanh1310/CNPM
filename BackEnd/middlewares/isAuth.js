@@ -5,11 +5,18 @@ const isAuth = async (req, res, next) => {
   try {
     const token = req.cookies.token
     if (!token) {
-      return res.status(401).json({ message: 'token not found' })
+      return res.status(401).json({ message: 'Token not found' })
     }
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET)
-    if (!decodedToken) {
-      return res.status(401).json({ message: 'token not verify' })
+
+    let decodedToken
+    try {
+      decodedToken = jwt.verify(token, process.env.JWT_SECRET)
+    } catch {
+      return res.status(401).json({ message: 'Invalid or expired token' })
+    }
+
+    if (!decodedToken || !decodedToken.userId) {
+      return res.status(401).json({ message: 'Invalid token payload' })
     }
 
     // Check if user exists and is active
@@ -21,11 +28,11 @@ const isAuth = async (req, res, next) => {
       return res.status(403).json({ message: 'Account has been banned' })
     }
 
-    console.log(decodedToken)
     req.userId = decodedToken.userId
     next()
-  } catch {
-    return res.status(500).json(`isAuth error`)
+  } catch (error) {
+    console.error('isAuth unexpected error:', error)
+    return res.status(500).json({ message: 'Authentication internal error' })
   }
 }
 

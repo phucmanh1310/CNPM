@@ -11,7 +11,9 @@ function useGetCurrentUser() {
 
   const fetchCurrentUser = useCallback(async () => {
     try {
-      const { data } = await axios.get(`/api/user/current`)
+      const { data } = await axios.get(`/api/user/current`, {
+        withCredentials: true,
+      })
       dispatch(setUserData(data.user))
     } catch (error) {
       // Nếu không có token hoặc token expired, clear user data
@@ -21,8 +23,9 @@ function useGetCurrentUser() {
   }, [dispatch])
 
   useEffect(() => {
-    // Chỉ fetch khi userData chưa có (undefined hoặc null)
-    if (!userData) {
+    // Only fetch when userData is undefined (not yet checked)
+    // Don't fetch when userData is null (already checked, no user logged in)
+    if (userData === undefined) {
       fetchCurrentUser()
     }
   }, [userData, fetchCurrentUser])
