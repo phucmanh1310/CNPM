@@ -12,6 +12,15 @@ describe('Order Pagination & Statistics Integration Tests', () => {
 
   beforeAll(async () => {
     await setupTestDB()
+  })
+
+  afterAll(async () => {
+    await teardownTestDB()
+  })
+
+  beforeEach(async () => {
+    // Reset test data
+    testOrders = []
 
     // Create test customer
     const customer = await User.create({
@@ -75,10 +84,6 @@ describe('Order Pagination & Statistics Integration Tests', () => {
       })
       testOrders.push(order)
     }
-  })
-
-  afterAll(async () => {
-    await teardownTestDB()
   })
 
   describe('GET /api/order/getUserOrdersPaginated', () => {
