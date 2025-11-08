@@ -276,9 +276,9 @@ export const handleMoMoCallback = async (req, res) => {
       extraData,
       signature,
       partnerUserId,
-      paymentOption,
-      userFee,
-      promotionInfo,
+      // paymentOption,
+      // userFee,
+      // promotionInfo,
     } = req.body
 
     console.log(

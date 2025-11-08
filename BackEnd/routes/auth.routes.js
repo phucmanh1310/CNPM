@@ -3,9 +3,9 @@ import {
   signUp,
   signIn,
   signOut,
-  sendOtp,
-  verifyOtp,
-  resetPassword,
+  // sendOtp,
+  // verifyOtp,
+  // resetPassword,
 } from '../controllers/auth.controllers.js'
 
 const authRouter = express.Router()

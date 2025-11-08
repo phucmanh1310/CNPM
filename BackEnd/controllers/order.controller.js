@@ -1,6 +1,5 @@
 import Shop from '../models/shop.model.js'
 import Order from '../models/order.model.js'
-import Item from '../models/item.model.js'
 import { autoReleaseDrone } from './drone.controller.js'
 
 export const placeOrder = async (req, res) => {
