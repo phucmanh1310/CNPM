@@ -131,7 +131,7 @@ describe('Order Pagination & Statistics Integration Tests', () => {
     })
 
     it('should search by order ID', async () => {
-      const testOrderId = testOrders[0]._id.toString().substring(0, 5)
+      const testOrderId = testOrders[0]._id.toString()
 
       const response = await request(app)
         .get(`/api/order/getUserOrdersPaginated?search=${testOrderId}`)
