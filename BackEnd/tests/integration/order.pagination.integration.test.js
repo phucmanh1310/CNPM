@@ -3,7 +3,8 @@ import app from '../../index.js'
 import Order from '../../models/order.model.js'
 import User from '../../models/user.model.js'
 import Shop from '../../models/shop.model.js'
-import { connectDB, disconnectDB } from '../../config/db.js'
+import connectDB from '../../config/db.js'
+import mongoose from 'mongoose'
 import genToken from '../../utils/token.js'
 
 describe('Order Pagination & Statistics Integration Tests', () => {
@@ -81,7 +82,7 @@ describe('Order Pagination & Statistics Integration Tests', () => {
     await Order.deleteMany({ user: customerId })
     await Shop.deleteMany({ owner: shopOwnerId })
     await User.deleteMany({ _id: { $in: [customerId, shopOwnerId] } })
-    await disconnectDB()
+    await mongoose.connection.close()
   })
 
   describe('GET /api/order/getUserOrdersPaginated', () => {
