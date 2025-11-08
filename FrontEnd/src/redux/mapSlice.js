@@ -59,8 +59,8 @@ function handleFamousLandmarks(address) {
 // Get current location
 export const getCurrentLocation = createAsyncThunk(
   'map/getCurrentLocation',
-  async (_, { rejectWithValue }) => {
-    return new Promise((resolve, reject) => {
+  async () => {
+    return new Promise((resolve) => {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords
