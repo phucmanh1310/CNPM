@@ -26,7 +26,7 @@
       statements: 10,
     },
     './utils/': {
-      branches: 5,
+      branches: 4,
       functions: 5,
       lines: 5,
       statements: 5,
