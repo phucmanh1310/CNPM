@@ -59,7 +59,8 @@ describe('Order Pagination & Statistics Integration Tests', () => {
     const today = new Date()
     for (let i = 0; i < 15; i++) {
       const orderDate = new Date(today)
-      orderDate.setDate(today.getDate() - (i % 7)) // Spread across 7 days
+      // Spread across 6 days (0-5) to ensure all orders are within last 7 days
+      orderDate.setDate(today.getDate() - (i % 6))
 
       const order = await Order.create({
         user: customerId,

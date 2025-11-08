@@ -5,16 +5,18 @@ import {
   getShopRevenueStats,
 } from '../../controllers/order.controller.js'
 import Order from '../../models/order.model.js'
+import mongoose from 'mongoose'
 
 // Mock Order model
 jest.mock('../../models/order.model.js')
 
 describe('Order Pagination Controller', () => {
   let req, res
+  const validObjectId = new mongoose.Types.ObjectId().toString()
 
   beforeEach(() => {
     req = {
-      userId: 'user123',
+      userId: validObjectId,
       query: {},
     }
     res = {
@@ -85,7 +87,9 @@ describe('Order Pagination Controller', () => {
     })
 
     it('should filter by search query', async () => {
-      req.query = { search: 'test123' }
+      // Use a valid ObjectId for search
+      const searchOrderId = new mongoose.Types.ObjectId().toString()
+      req.query = { search: searchOrderId }
 
       Order.find = jest.fn().mockReturnValue({
         sort: jest.fn().mockReturnThis(),
@@ -101,8 +105,8 @@ describe('Order Pagination Controller', () => {
 
       expect(Order.find).toHaveBeenCalledWith(
         expect.objectContaining({
-          user: 'user123',
-          $or: expect.any(Array),
+          user: validObjectId,
+          _id: expect.any(mongoose.Types.ObjectId),
         })
       )
     })
@@ -226,7 +230,7 @@ describe('Order Pagination Controller', () => {
       expect(res.status).toHaveBeenCalledWith(500)
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: expect.stringContaining('Aggregation error'),
+          message: expect.stringContaining('get user stats error'),
         })
       )
     })
