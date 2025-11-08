@@ -105,7 +105,14 @@ export const getCurrentLocation = createAsyncThunk(
           }
         },
         (error) => {
-          reject(rejectWithValue(error.message))
+          // User denied location permission or geolocation failed
+          console.error('Geolocation error:', error.message)
+          // Return default location (Ho Chi Minh City center)
+          resolve({
+            lat: 10.7769,
+            lon: 106.7009,
+            address: 'TP. Hồ Chí Minh, Việt Nam',
+          })
         }
       )
     })

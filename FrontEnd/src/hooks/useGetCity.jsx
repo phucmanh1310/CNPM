@@ -38,15 +38,27 @@ function useGetCity() {
             dispatch(setCurrentState(state))
             dispatch(setCurrentAddress(currentAddress))
           }
-          // Nếu không có results thì không dispatch gì
+          // Nếu không có results thì dùng default
+          if (!data?.results?.length) {
+            dispatch(setCurrentCity('Ho Chi Minh City'))
+            dispatch(setCurrentState(''))
+            dispatch(setCurrentAddress('TP. Hồ Chí Minh, Việt Nam'))
+          }
         } catch (err) {
           console.error('Error fetching location:', err)
-          // Không dispatch fallback
+          // Fallback to default city
+          dispatch(setCurrentCity('Ho Chi Minh City'))
+          dispatch(setCurrentState(''))
+          dispatch(setCurrentAddress('TP. Hồ Chí Minh, Việt Nam'))
         }
       },
       (err) => {
         console.error('Error getting position:', err)
-        // Không dispatch fallback
+        // Fallback to default city when user denies location
+        dispatch(setCurrentCity('Ho Chi Minh City'))
+        dispatch(setCurrentState(''))
+        dispatch(setCurrentAddress('TP. Hồ Chí Minh, Việt Nam'))
+        dispatch(setLocation({ lat: 10.7769, lon: 106.7009 }))
       }
     )
   }, [dispatch, apiKey])
