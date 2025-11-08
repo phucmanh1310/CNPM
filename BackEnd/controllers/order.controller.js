@@ -427,14 +427,18 @@ export const getOwnerOrdersPaginated = async (req, res) => {
 // Get user spending statistics (last 7 days)
 export const getUserSpendingStats = async (req, res) => {
   try {
-    const userId = req.userId
+    // Validate and convert userId to ObjectId
+    if (!mongoose.Types.ObjectId.isValid(req.userId)) {
+      return res.status(400).json({ message: 'Invalid user ID' })
+    }
+    const userId = new mongoose.Types.ObjectId(req.userId)
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
     const stats = await Order.aggregate([
       {
         $match: {
-          user: new mongoose.Types.ObjectId(userId),
+          user: userId,
           createdAt: { $gte: sevenDaysAgo },
           paymentStatus: 'success',
         },
@@ -476,14 +480,18 @@ export const getUserSpendingStats = async (req, res) => {
 // Get shop revenue statistics (last 7 days)
 export const getShopRevenueStats = async (req, res) => {
   try {
-    const ownerId = req.userId
+    // Validate and convert ownerId to ObjectId
+    if (!mongoose.Types.ObjectId.isValid(req.userId)) {
+      return res.status(400).json({ message: 'Invalid owner ID' })
+    }
+    const ownerId = new mongoose.Types.ObjectId(req.userId)
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
     const stats = await Order.aggregate([
       {
         $match: {
-          'shopOrder.owner': new mongoose.Types.ObjectId(ownerId),
+          'shopOrder.owner': ownerId,
           createdAt: { $gte: sevenDaysAgo },
           paymentStatus: 'success',
         },
