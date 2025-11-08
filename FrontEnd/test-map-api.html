@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Geoapify API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .result {
+            background: #f5f5f5;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 3px;
+            white-space: pre-wrap;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🗺️ Geoapify API Test</h1>
+    
+    <div class="test-section">
+        <h3>API Key Check</h3>
+        <button onclick="testAPIKey()">Test API Key</button>
+        <div id="apiKeyResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>1. Geocoding (Address → Coordinates)</h3>
+        <input type="text" id="addressInput" placeholder="Enter address (e.g., Ho Chi Minh City)" style="width: 300px; padding: 8px;">
+        <button onclick="testGeocode()">Geocode</button>
+        <div id="geocodeResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Reverse Geocoding (Coordinates → Address)</h3>
+        <input type="text" id="latInput" placeholder="Latitude (e.g., 10.7769)" style="width: 140px; padding: 8px;">
+        <input type="text" id="lonInput" placeholder="Longitude (e.g., 106.7009)" style="width: 140px; padding: 8px;">
+        <button onclick="testReverseGeocode()">Reverse Geocode</button>
+        <div id="reverseResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Get Current Location</h3>
+        <button onclick="testCurrentLocation()">Get My Location</button>
+        <div id="locationResult" class="result"></div>
+    </div>
+
+    <script>
+        const API_KEY = '6b80094f605040a5b675e471228438fa';
+
+        function testAPIKey() {
+            const result = document.getElementById('apiKeyResult');
+            result.innerHTML = `<div class="success">✅ API Key loaded: ${API_KEY.substring(0, 10)}...${API_KEY.substring(API_KEY.length - 4)}</div>`;
+        }
+
+        async function testGeocode() {
+            const address = document.getElementById('addressInput').value || 'Ho Chi Minh City';
+            const result = document.getElementById('geocodeResult');
+            result.innerHTML = 'Loading...';
+
+            try {
+                const response = await fetch(
+                    `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(address)}&apiKey=${API_KEY}`
+                );
+                const data = await response.json();
+                
+                if (data.features && data.features.length > 0) {
+                    const location = data.features[0];
+                    result.innerHTML = `<div class="success">✅ Success!</div>
+Address: ${location.properties.formatted}
+Coordinates: ${location.geometry.coordinates[1]}, ${location.geometry.coordinates[0]}
+<br><br>Full response:
+${JSON.stringify(data, null, 2)}`;
+                } else {
+                    result.innerHTML = `<div class="error">❌ No results found</div>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testReverseGeocode() {
+            const lat = document.getElementById('latInput').value || '10.7769';
+            const lon = document.getElementById('lonInput').value || '106.7009';
+            const result = document.getElementById('reverseResult');
+            result.innerHTML = 'Loading...';
+
+            try {
+                const response = await fetch(
+                    `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${API_KEY}`
+                );
+                const data = await response.json();
+                
+                if (data.features && data.features.length > 0) {
+                    const location = data.features[0];
+                    result.innerHTML = `<div class="success">✅ Success!</div>
+Address: ${location.properties.formatted}
+City: ${location.properties.city || 'N/A'}
+State: ${location.properties.state || 'N/A'}
+<br><br>Full response:
+${JSON.stringify(data, null, 2)}`;
+                } else {
+                    result.innerHTML = `<div class="error">❌ No results found</div>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testCurrentLocation() {
+            const result = document.getElementById('locationResult');
+            result.innerHTML = 'Getting location...';
+
+            if (!navigator.geolocation) {
+                result.innerHTML = `<div class="error">❌ Geolocation not supported by browser</div>`;
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    result.innerHTML = `<div class="success">✅ Got coordinates: ${latitude}, ${longitude}</div>Fetching address...`;
+
+                    try {
+                        const response = await fetch(
+                            `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&apiKey=${API_KEY}`
+                        );
+                        const data = await response.json();
+                        
+                        if (data.features && data.features.length > 0) {
+                            const location = data.features[0];
+                            result.innerHTML = `<div class="success">✅ Success!</div>
+Your Location: ${latitude}, ${longitude}
+Address: ${location.properties.formatted}
+<br><br>Full response:
+${JSON.stringify(data, null, 2)}`;
+                        }
+                    } catch (error) {
+                        result.innerHTML += `<br><div class="error">❌ Error fetching address: ${error.message}</div>`;
+                    }
+                },
+                (error) => {
+                    result.innerHTML = `<div class="error">❌ Geolocation error: ${error.message}</div>
+Error code: ${error.code}
+- PERMISSION_DENIED = 1
+- POSITION_UNAVAILABLE = 2
+- TIMEOUT = 3`;
+                }
+            );
+        }
+
+        // Auto test on load
+        window.onload = () => {
+            testAPIKey();
+        };
+    </script>
+</body>
+</html>
