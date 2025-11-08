@@ -1,10 +1,8 @@
 import request from 'supertest'
-import app from '../../index.js'
+import { setupTestDB, teardownTestDB, app } from './setup.js'
 import Order from '../../models/order.model.js'
 import User from '../../models/user.model.js'
 import Shop from '../../models/shop.model.js'
-import connectDB from '../../config/db.js'
-import mongoose from 'mongoose'
 import genToken from '../../utils/token.js'
 
 describe('Order Pagination & Statistics Integration Tests', () => {
@@ -13,7 +11,7 @@ describe('Order Pagination & Statistics Integration Tests', () => {
   let testOrders = []
 
   beforeAll(async () => {
-    await connectDB()
+    await setupTestDB()
 
     // Create test customer
     const customer = await User.create({
@@ -80,11 +78,7 @@ describe('Order Pagination & Statistics Integration Tests', () => {
   })
 
   afterAll(async () => {
-    // Cleanup
-    await Order.deleteMany({ user: customerId })
-    await Shop.deleteMany({ owner: shopOwnerId })
-    await User.deleteMany({ _id: { $in: [customerId, shopOwnerId] } })
-    await mongoose.connection.close()
+    await teardownTestDB()
   })
 
   describe('GET /api/order/getUserOrdersPaginated', () => {
@@ -167,7 +161,7 @@ describe('Order Pagination & Statistics Integration Tests', () => {
         email: 'empty.owner@test.com',
         password: 'password123',
         mobile: '5555555555',
-        role: 'shop_owner',
+        role: 'owner',
       })
       const emptyOwnerToken = await genToken(newOwner._id)
 
