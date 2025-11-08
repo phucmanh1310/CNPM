@@ -35,12 +35,24 @@ CMD ["yarn", "dev"]
 # Test stage
 FROM base AS test
 WORKDIR /app
+
+# Copy package files
 COPY package*.json ./
 COPY yarn.lock* ./
+
+# Install all dependencies (including dev dependencies for testing)
 RUN yarn install --frozen-lockfile
+
+# Copy source code
 COPY . .
+
+# Set test environment
 ENV NODE_ENV=test
-RUN yarn test:ci
+
+# Note: Tests require MongoDB connection
+# This stage is meant to be run with docker-compose.test.yml
+# which provides MongoDB service
+CMD ["yarn", "test:ci"]
 
 # Production build stage
 FROM base AS builder

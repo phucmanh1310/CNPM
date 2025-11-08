@@ -35,12 +35,22 @@ CMD ["yarn", "dev", "--host", "0.0.0.0"]
 # Test stage
 FROM base AS test
 WORKDIR /app
+
+# Copy package files
 COPY package*.json ./
 COPY yarn.lock* ./
+
+# Install all dependencies (including dev dependencies for testing)
 RUN yarn install --frozen-lockfile
+
+# Copy source code
 COPY . .
+
+# Set test environment
 ENV NODE_ENV=test
-RUN yarn test:ci
+
+# Run tests
+CMD ["yarn", "test:ci"]
 
 # Build stage
 FROM base AS builder
