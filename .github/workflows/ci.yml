@@ -132,10 +132,6 @@ jobs:
         working-directory: ./FrontEnd
         run: yarn test:ci
 
-      - name: Run Integration Tests
-        working-directory: ./FrontEnd
-        run: yarn test:ci -- src/**/*.integration.test.jsx
-
       - name: Build Frontend
         working-directory: ./FrontEnd
         run: yarn build

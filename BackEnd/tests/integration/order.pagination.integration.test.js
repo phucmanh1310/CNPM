@@ -32,7 +32,7 @@ describe('Order Pagination & Statistics Integration Tests', () => {
       email: 'shopowner.pagination@test.com',
       password: 'password123',
       mobile: '0987654321',
-      role: 'shop_owner',
+      role: 'owner',
     })
     shopOwnerId = shopOwner._id
     shopOwnerToken = await genToken(shopOwnerId)
