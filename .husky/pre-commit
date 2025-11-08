@@ -1,6 +1,4 @@
 #!/bin/sh
-# Ensure Node.js and npx are in PATH for Windows (NVM4W)
-export PATH="/c/Users/PhucManh/AppData/Local/nvm:/c/nvm4w/nodejs:$PATH"
 . "$(dirname -- "$0")/_/husky.sh"
-
-npx --no-install lint-staged
+export PATH="/c/nvm4w/nodejs:$PATH"
+npx.cmd lint-staged
