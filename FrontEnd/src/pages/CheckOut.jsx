@@ -110,7 +110,7 @@ function CheckOut() {
   const dispatch = useDispatch()
   const { location, address, suggestions, loading, searchLoading } =
     useSelector((state) => state.map)
-  const { cartItems } = useSelector((state) => state.user)
+  const { cartItems, currentAddress } = useSelector((state) => state.user)
   const [inputAddress, setInputAddress] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('cod')
   const [mapType, setMapType] = useState('roadmap') // roadmap, satellite, terrain
@@ -135,9 +135,11 @@ function CheckOut() {
   }, [dispatch, location.lat, location.lon, address])
 
   useEffect(() => {
-    // Update input address when Redux address changes
-    setInputAddress(address || 'Loading address...')
-  }, [address])
+    // Update input address from userSlice (detailed address from useGetCity)
+    // or fallback to mapSlice address
+    const addressToUse = currentAddress || address || 'Loading address...'
+    setInputAddress(addressToUse)
+  }, [currentAddress, address])
 
   // Force re-render map khi location thay đổi
   useEffect(() => {
