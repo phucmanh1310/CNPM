@@ -330,12 +330,12 @@ export const getUserOrdersPaginated = async (req, res) => {
     // Build query
     const query = { user: userId }
 
-    // Add search filter (search in shop name or order ID)
+    // Add search filter (search by exact order ID only)
     if (search) {
-      query.$or = [
-        { _id: { $regex: search, $options: 'i' } },
-        { 'shopOrder.shop': { $regex: search, $options: 'i' } },
-      ]
+      // Only match exact ObjectId if the search string is a valid ObjectId
+      if (mongoose.Types.ObjectId.isValid(search)) {
+        query._id = new mongoose.Types.ObjectId(search)
+      }
     }
 
     // Add status filter
