@@ -1,5 +1,5 @@
 # Multi-stage build for Node.js Backend
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -10,7 +10,7 @@ COPY package*.json ./
 COPY yarn.lock* ./
 
 # Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+RUN yarn install --production --frozen-lockfile && yarn cache clean
 
 # Development stage
 FROM base AS dev
@@ -21,7 +21,7 @@ COPY package*.json ./
 COPY yarn.lock* ./
 
 # Install all dependencies (including dev)
-RUN npm ci
+RUN yarn install --frozen-lockfile
 
 # Copy source code
 COPY . .
@@ -30,16 +30,17 @@ COPY . .
 EXPOSE 5000
 
 # Start development server
-CMD ["npm", "run", "dev"]
+CMD ["yarn", "dev"]
 
 # Test stage
 FROM base AS test
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+COPY yarn.lock* ./
+RUN yarn install --frozen-lockfile
 COPY . .
 ENV NODE_ENV=test
-RUN npm run test:ci
+RUN yarn test:ci
 
 # Production build stage
 FROM base AS builder
@@ -50,13 +51,13 @@ COPY package*.json ./
 COPY yarn.lock* ./
 
 # Install all dependencies
-RUN npm ci
+RUN yarn install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
 # Run any build steps if needed (linting, etc.)
-RUN npm run lint
+RUN yarn lint
 
 # Production stage
 FROM base AS production

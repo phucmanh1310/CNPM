@@ -10,7 +10,7 @@ COPY package*.json ./
 COPY yarn.lock* ./
 
 # Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+RUN yarn install --production --frozen-lockfile && yarn cache clean
 
 # Development stage
 FROM base AS dev
@@ -21,7 +21,7 @@ COPY package*.json ./
 COPY yarn.lock* ./
 
 # Install all dependencies (including dev)
-RUN npm ci
+RUN yarn install --frozen-lockfile
 
 # Copy source code
 COPY . .
@@ -30,16 +30,17 @@ COPY . .
 EXPOSE 5173
 
 # Start development server
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["yarn", "dev", "--host", "0.0.0.0"]
 
 # Test stage
 FROM base AS test
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+COPY yarn.lock* ./
+RUN yarn install --frozen-lockfile
 COPY . .
 ENV NODE_ENV=test
-RUN npm run test:ci
+RUN yarn test:ci
 
 # Build stage
 FROM base AS builder
@@ -50,13 +51,13 @@ COPY package*.json ./
 COPY yarn.lock* ./
 
 # Install all dependencies
-RUN npm ci
+RUN yarn install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
 # Build the application
-RUN npm run build
+RUN yarn build
 
 # Production stage with Nginx
 FROM nginx:alpine AS production
