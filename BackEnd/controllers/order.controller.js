@@ -1,5 +1,6 @@
 import Shop from '../models/shop.model.js'
 import Order from '../models/order.model.js'
+import mongoose from 'mongoose'
 import { autoReleaseDrone } from './drone.controller.js'
 
 export const placeOrder = async (req, res) => {
@@ -426,7 +427,7 @@ export const getOwnerOrdersPaginated = async (req, res) => {
 // Get user spending statistics (last 7 days)
 export const getUserSpendingStats = async (req, res) => {
   try {
-    const userId = req.userId
+    const userId = new mongoose.Types.ObjectId(req.userId)
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
@@ -475,7 +476,7 @@ export const getUserSpendingStats = async (req, res) => {
 // Get shop revenue statistics (last 7 days)
 export const getShopRevenueStats = async (req, res) => {
   try {
-    const ownerId = req.userId
+    const ownerId = new mongoose.Types.ObjectId(req.userId)
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
