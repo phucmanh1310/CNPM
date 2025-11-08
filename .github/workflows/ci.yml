@@ -27,6 +27,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "yarn"
+          cache-dependency-path: |
+            BackEnd/yarn.lock
+            FrontEnd/yarn.lock
 
       - name: Install Backend Dependencies
         working-directory: ./BackEnd
@@ -78,6 +81,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "yarn"
+          cache-dependency-path: BackEnd/yarn.lock
 
       - name: Install Dependencies
         working-directory: ./BackEnd
@@ -118,6 +122,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "yarn"
+          cache-dependency-path: FrontEnd/yarn.lock
 
       - name: Install Dependencies
         working-directory: ./FrontEnd
