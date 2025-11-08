@@ -128,13 +128,15 @@ function CheckOut() {
   const total = subtotal + shippingFee
 
   useEffect(() => {
-    if (!location.lat || !location.lon) {
+    // Always try to get current location on mount if not available
+    if (!location.lat || !location.lon || !address) {
       dispatch(getCurrentLocation())
     }
-  }, [dispatch, location.lat, location.lon])
+  }, [dispatch, location.lat, location.lon, address])
 
   useEffect(() => {
-    setInputAddress(address || '')
+    // Update input address when Redux address changes
+    setInputAddress(address || 'Loading address...')
   }, [address])
 
   // Force re-render map khi location thay đổi
