@@ -30,6 +30,7 @@ jobs:
         run: sleep 60
 
       - name: Health Check
+        if: ${{ secrets.BACKEND_URL != '' }}
         run: |
           curl -f ${{ secrets.BACKEND_URL }}/health || exit 1
           echo "Backend deployed successfully!"
