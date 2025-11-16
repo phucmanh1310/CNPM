@@ -166,3 +166,60 @@ jobs:
           target: production
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # Verify Railway Deployment
+  verify-railway-deployment:
+    needs: [code-quality, backend-tests, frontend-tests]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Wait for Railway Deployment
+        run: |
+          echo "Waiting for Railway to deploy..."
+          sleep 60
+
+      - name: Check Backend Health
+        run: |
+          echo "Checking Railway backend health..."
+          MAX_RETRIES=10
+          RETRY_COUNT=0
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://cnpm-production-7745.up.railway.app/health || echo "000")
+            
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ Railway backend is healthy! (HTTP $HTTP_CODE)"
+              exit 0
+            fi
+            
+            echo "⏳ Attempt $((RETRY_COUNT + 1))/$MAX_RETRIES: HTTP $HTTP_CODE - Retrying in 30s..."
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            sleep 30
+          done
+          
+          echo "❌ Railway backend health check failed after $MAX_RETRIES attempts"
+          exit 1
+
+      - name: Check Metrics Endpoint
+        run: |
+          echo "Checking metrics endpoint..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://cnpm-production-7745.up.railway.app/metrics)
+          
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Metrics endpoint is accessible!"
+          else
+            echo "⚠️  Metrics endpoint returned HTTP $HTTP_CODE"
+          fi
+
+      - name: Deployment Summary
+        if: always()
+        run: |
+          echo "### 🚀 Railway Deployment Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Backend URL**: https://cnpm-production-7745.up.railway.app" >> $GITHUB_STEP_SUMMARY
+          echo "- **Health Check**: /health" >> $GITHUB_STEP_SUMMARY
+          echo "- **Metrics**: /metrics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Deployment verification completed!" >> $GITHUB_STEP_SUMMARY
+
