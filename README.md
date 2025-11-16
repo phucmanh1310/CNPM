@@ -132,7 +132,7 @@ Truy cập ứng dụng trên trình duyệt: `http://localhost:5173`
 *   `...`
 ## Kiểm thử
 
-(Hướng dẫn kiểm thử sẽ được thêm vào sau)
+
 
 ## Triển khai
 
