@@ -1,8 +1,14 @@
 # Nixpacks configuration for Railway
 # Tells Railway to use yarn instead of npm
 
+[providers]
+node = "22"
+
+[phases.setup]
+nixPkgs = ["nodejs-22_x", "yarn"]
+
 [phases.install]
-cmds = ["yarn install --frozen-lockfile"]
+cmds = ["yarn install --frozen-lockfile --production"]
 
 [phases.build]
 cmds = []
