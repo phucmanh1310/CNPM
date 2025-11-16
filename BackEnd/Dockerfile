@@ -7,9 +7,10 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
+COPY yarn.lock* ./
 
 # Install dependencies
-RUN npm install --omit=dev && npm cache clean --force
+RUN yarn install --production --frozen-lockfile && yarn cache clean
 
 # Development stage
 FROM base AS dev
@@ -17,9 +18,10 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
+COPY yarn.lock* ./
 
 # Install all dependencies (including dev)
-RUN npm install
+RUN yarn install --frozen-lockfile
 
 # Copy source code
 COPY . .

@@ -48,14 +48,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+          cache: yarn
+          cache-dependency-path: 'FrontEnd/yarn.lock'
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
       - name: Prepare Frontend
         working-directory: ./FrontEnd
-        run: npm ci --ignore-scripts --no-audit --no-fund
+        run: yarn install --frozen-lockfile
 
       - name: Build Frontend (preview)
         working-directory: ./FrontEnd
