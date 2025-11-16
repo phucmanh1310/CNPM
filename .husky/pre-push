@@ -5,6 +5,12 @@ export PATH="/c/nvm4w/nodejs:$PATH"
 
 printf "\n[Husky] Pre-push: running lint + backend tests...\n\n"
 
+# Ensure backend deps installed if missing
+if [ ! -d "BackEnd/node_modules" ]; then
+  echo "[Husky] Installing BackEnd deps (first run)..."
+  npm --prefix BackEnd ci 2>/dev/null || npm --prefix BackEnd install || exit 1
+fi
+
 # Lint quickly (backend)
 npm run lint:backend || { echo "Lint failed"; exit 1; }
 
