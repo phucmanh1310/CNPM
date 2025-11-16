@@ -28,6 +28,8 @@ export default defineConfig(({ mode }) => {
         },
       },
       chunkSizeWarningLimit: 1000,
+      reportCompressedSize: false, // Disable gzip size calculation to speed up build
+      sourcemap: false, // Disable sourcemaps in production for faster builds
     },
     test: {
       globals: true,
