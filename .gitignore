@@ -15,3 +15,6 @@ coverage/
 *.json
 *.json
 *.lock
+
+# Alertmanager secrets
+monitoring/alertmanager/config.yml

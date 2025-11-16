@@ -1,0 +1,63 @@
+groups:
+  - name: backend_alerts
+    interval: 30s
+    rules:
+      # Alert khi p95 latency vượt 1 giây
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, sum(rate(ktpm_backend_http_request_duration_seconds_bucket[5m])) by (le, route)) > 1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High latency detected on {{ $labels.route }}"
+          description: "p95 latency is {{ $value }}s on route {{ $labels.route }}"
+
+      # Alert khi error rate cao
+      - alert: HighErrorRate
+        expr: sum(rate(ktpm_backend_http_errors_total[5m])) by (route) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate on {{ $labels.route }}"
+          description: "Error rate is {{ $value }} errors/sec on {{ $labels.route }}"
+
+      # Alert khi CPU usage cao
+      - alert: HighCPUUsage
+        expr: rate(ktpm_backend_process_cpu_user_seconds_total[5m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backend CPU usage is high"
+          description: "CPU usage is {{ $value }}%"
+
+      # Alert khi memory usage cao
+      - alert: HighMemoryUsage
+        expr: (ktpm_backend_nodejs_heap_size_used_bytes / ktpm_backend_nodejs_heap_size_total_bytes) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backend memory usage is high"
+          description: "Heap usage is {{ $value }}%"
+
+      # Alert khi event loop lag cao
+      - alert: EventLoopLag
+        expr: ktpm_backend_nodejs_eventloop_lag_seconds > 0.5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Event loop is lagging"
+          description: "Event loop lag is {{ $value }}s"
+
+      # Alert khi backend down
+      - alert: BackendDown
+        expr: up{job="backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend is down"
+          description: "Backend service is not responding"

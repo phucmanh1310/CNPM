@@ -13,6 +13,7 @@ import cartRouter from './routes/cart.routes.js'
 import droneRouter from './routes/drone.routes.js'
 import paymentRouter from './routes/payment.routes.js'
 import adminRouter from './routes/admin.routes.js'
+import { metricsMiddleware, metricsHandler } from './middlewares/metrics.js'
 
 const app = express()
 
@@ -51,6 +52,8 @@ app.use(
 )
 app.use(express.json())
 app.use(cookieParser())
+// Metrics should be early to wrap most middlewares/handlers
+app.use(metricsMiddleware)
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -60,6 +63,9 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
   })
 })
+
+// Prometheus metrics endpoint
+app.get('/metrics', metricsHandler)
 
 // Root route - API info
 app.get('/', (req, res) => {
