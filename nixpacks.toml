@@ -1,0 +1,20 @@
+# Nixpacks configuration for Railway (Root level)
+# This file is for deploying from root directory
+# For BackEnd-only deployment, use BackEnd/nixpacks.toml
+
+[providers]
+node = "22"
+
+[phases.install]
+# Install both root and BackEnd dependencies
+cmds = [
+  "npm install --omit=dev",
+  "cd BackEnd && npm install --production --no-audit --no-fund"
+]
+
+[phases.build]
+cmds = []
+
+[start]
+# Start directly with node (no yarn needed)
+cmd = "node BackEnd/index.js"
