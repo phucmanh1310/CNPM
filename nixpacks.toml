@@ -6,9 +6,8 @@
 node = "22"
 
 [phases.install]
-# Install both root and BackEnd dependencies
+# Install BackEnd dependencies with correct working directory
 cmds = [
-  "npm install --omit=dev",
   "cd BackEnd && npm install --production --no-audit --no-fund"
 ]
 
@@ -17,4 +16,4 @@ cmds = []
 
 [start]
 # Start directly with node (no yarn needed)
-cmd = "node BackEnd/index.js"
+cmd = "cd BackEnd && node index.js"
