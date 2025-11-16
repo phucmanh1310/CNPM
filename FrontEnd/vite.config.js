@@ -32,11 +32,8 @@ export default defineConfig(({ mode }) => {
     test: {
       globals: true,
       environment: 'jsdom',
+      threads: false,
       setupFiles: './src/tests/setup.js',
-      passWithNoTests: true,
-      pool: 'threads',
-      testTimeout: 20000,
-      hookTimeout: 20000,
       css: true,
       coverage: {
         reporter: ['text', 'json', 'html'],
