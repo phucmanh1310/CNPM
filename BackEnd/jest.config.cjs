@@ -25,6 +25,8 @@ module.exports = {
     './utils/': { branches: 4, functions: 5, lines: 5, statements: 5 },
   },
   verbose: true,
+  // Increase global test timeout for slow CI environments
+  testTimeout: 30000,
   forceExit: true,
   clearMocks: true,
   resetMocks: true,

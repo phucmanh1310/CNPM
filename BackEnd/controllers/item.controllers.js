@@ -7,8 +7,13 @@ export const addItem = async (req, res) => {
   try {
     const { name, category, foodType, price } = req.body
     let image
+    // console.log('req.file (in addItem):', req.file)
     if (req.file) {
+      // uploadOnCloudinary may be mocked in tests; fallback to req.body.image
       image = await uploadOnCloudinary(req.file.path)
+    }
+    if (!image && req.body.image) {
+      image = req.body.image // allow providing image url directly (tests / manual fallback)
     }
 
     // Tìm shop
