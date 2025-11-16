@@ -7,7 +7,6 @@
     "dev:backend": "cd BackEnd && yarn dev",
     "dev:frontend": "cd FrontEnd && yarn dev",
     "start": "cd BackEnd && yarn start",
-    "postinstall": "cd BackEnd && yarn install --production",
     "test": "concurrently \"yarn test:backend\" \"yarn test:frontend\"",
     "test:backend": "cd BackEnd && yarn test",
     "test:frontend": "cd FrontEnd && yarn test",

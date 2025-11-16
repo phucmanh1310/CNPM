@@ -1,0 +1,11 @@
+# Nixpacks configuration for Railway
+# Tells Railway to use yarn instead of npm
+
+[phases.install]
+cmds = ["yarn install --frozen-lockfile"]
+
+[phases.build]
+cmds = []
+
+[start]
+cmd = "yarn start"

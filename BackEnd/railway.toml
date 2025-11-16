@@ -1,0 +1,10 @@
+# Railway.app configuration
+# https://docs.railway.app/guides/config-as-code
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "yarn start"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
