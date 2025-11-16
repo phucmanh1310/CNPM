@@ -1,0 +1,14 @@
+#!/bin/sh
+. "$(dirname -- "$0")/_/husky.sh"
+# Ensure Node is available on Windows Git Bash similar to pre-commit
+export PATH="/c/nvm4w/nodejs:$PATH"
+
+printf "\n[Husky] Pre-push: running lint + backend tests...\n\n"
+
+# Lint quickly (backend)
+npm run lint:backend || { echo "Lint failed"; exit 1; }
+
+# Run fast CI-friendly backend tests
+npm run test:backend || { echo "Tests failed"; exit 1; }
+
+printf "\n[Husky] OK: push allowed.\n\n"
