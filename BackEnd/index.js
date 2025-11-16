@@ -25,6 +25,7 @@ const PORT = process.env.PORT || 5000
 // TODO: Replace with specific Vercel URL after deployment
 const allowedOrigins = [
   'http://localhost:5173',
+  'https://cnpm-ten.vercel.app', // Production Vercel URL
   // Add the main production URL from your .env file if you have one
   ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : []),
 ]
