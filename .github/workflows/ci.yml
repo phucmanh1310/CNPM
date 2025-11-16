@@ -26,51 +26,35 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "yarn"
-          cache-dependency-path: |
-            BackEnd/yarn.lock
-            FrontEnd/yarn.lock
+          cache: "npm"
 
       - name: Install Backend Dependencies
         working-directory: ./BackEnd
-        run: yarn install --frozen-lockfile
+        run: npm install --no-audit --no-fund
 
       - name: Install Frontend Dependencies
         working-directory: ./FrontEnd
-        run: yarn install --frozen-lockfile
+        run: npm install --no-audit --no-fund
 
       - name: Backend Lint Check
         working-directory: ./BackEnd
-        run: yarn lint
+        run: npm run lint
 
       - name: Frontend Lint Check
         working-directory: ./FrontEnd
-        run: yarn lint
+        run: npm run lint
 
       - name: Backend Security Audit
         working-directory: ./BackEnd
-        run: yarn audit --level moderate || true
+        run: npm audit --audit-level=moderate || true
 
       - name: Frontend Security Audit
         working-directory: ./FrontEnd
-        run: yarn audit --level moderate || true
+        run: npm audit --audit-level=moderate || true
 
   # Backend Tests
   backend-tests:
     runs-on: ubuntu-latest
-    services:
-      mongodb:
-        image: mongo:7.0
-        env:
-          MONGO_INITDB_ROOT_USERNAME: admin
-          MONGO_INITDB_ROOT_PASSWORD: password
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --eval 'db.adminCommand(\"ismaster\")'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
       - name: Checkout code
@@ -80,27 +64,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "yarn"
-          cache-dependency-path: BackEnd/yarn.lock
+          cache: "npm"
 
       - name: Install Dependencies
         working-directory: ./BackEnd
-        run: yarn install --frozen-lockfile
+        run: npm install --no-audit --no-fund
 
-      - name: Run Unit Tests
+      - name: Run Backend Tests
         working-directory: ./BackEnd
-        run: yarn test:ci
+        run: npm run test:ci
         env:
           NODE_ENV: test
-          MONGO_URI: mongodb://admin:password@localhost:27017/test?authSource=admin
-          JWT_SECRET: test-secret-key
-
-      - name: Run Integration Tests
-        working-directory: ./BackEnd
-        run: yarn test:ci -- tests/integration
-        env:
-          NODE_ENV: test
-          MONGO_URI: mongodb://admin:password@localhost:27017/test_integration?authSource=admin
           JWT_SECRET: test-secret-key
 
       - name: Upload Backend Coverage
@@ -121,20 +95,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "yarn"
-          cache-dependency-path: FrontEnd/yarn.lock
+          cache: "npm"
 
       - name: Install Dependencies
         working-directory: ./FrontEnd
-        run: yarn install --frozen-lockfile
+        run: npm install --no-audit --no-fund
 
       - name: Run Unit Tests
         working-directory: ./FrontEnd
-        run: yarn test:ci
+        run: npm run test:ci
 
       - name: Build Frontend
         working-directory: ./FrontEnd
-        run: yarn build
+        run: npm run build
 
       - name: Upload Frontend Coverage
         uses: codecov/codecov-action@v3

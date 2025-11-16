@@ -1,7 +1,6 @@
-# Ignore node_modules and lock files
+# Ignore node_modules
 node_modules/
 yarn.lock
-package-lock.json
 
 # Ignore build/coverage output directories if có
 dist/

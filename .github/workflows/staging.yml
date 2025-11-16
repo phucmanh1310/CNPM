@@ -1,0 +1,103 @@
+name: Staging Deploy and Smoke Tests
+
+on:
+  push:
+    branches:
+      - "feature/**"
+      - staging
+  pull_request:
+    branches:
+      - main
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  backend-staging-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Trigger Render staging deploy
+        run: |
+          API_KEY="${{ secrets.RENDER_API_KEY_STAGING }}"
+          SERVICE_ID="${{ secrets.RENDER_SERVICE_ID_STAGING }}"
+          if [ -z "$API_KEY" ] || [ -z "$SERVICE_ID" ]; then
+            echo "Staging Render secrets missing; skipping deploy trigger"; exit 0; fi
+          curl -s -X POST \
+            "https://api.render.com/v1/services/$SERVICE_ID/deploys" \
+            -H "Authorization: Bearer $API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' | jq -r '.' || true
+
+      - name: Wait for staging to become healthy
+        run: |
+          URL="${{ secrets.BACKEND_STAGING_URL }}"; \
+          if [ -z "$URL" ]; then echo "BACKEND_STAGING_URL not set; skipping health wait"; exit 0; fi
+          echo "Waiting for $URL/health ...";
+          for i in $(seq 1 30); do curl -sf "$URL/health" && exit 0; sleep 10; done; exit 1
+
+  frontend-staging-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Prepare Frontend
+        working-directory: ./FrontEnd
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Build Frontend (preview)
+        working-directory: ./FrontEnd
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VITE_API_URL: ${{ secrets.BACKEND_STAGING_URL }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "Vercel secrets missing; skipping preview build"; exit 0; fi
+          vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
+          vercel build --token="$VERCEL_TOKEN"
+
+      - name: Deploy Frontend (preview) and capture URL
+        id: vercel_deploy
+        working-directory: ./FrontEnd
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then echo "VERCEL_TOKEN missing; skipping preview deploy"; exit 0; fi
+          URL=$(vercel deploy --prebuilt --token="$VERCEL_TOKEN" | tail -n1)
+          echo "preview_url=$URL" >> $GITHUB_OUTPUT
+          echo "Deployed preview: $URL"
+
+      - name: Smoke check Frontend preview
+        run: |
+          URL="${{ steps.vercel_deploy.outputs.preview_url }}"; \
+          FALLBACK="${{ secrets.FRONTEND_STAGING_URL }}"; \
+          TARGET=${URL:-$FALLBACK}; \
+          if [ -z "$TARGET" ]; then echo "No preview URL available; skipping smoke"; exit 0; fi
+          echo "Checking $TARGET ..."; curl -sf "$TARGET" >/dev/null
+
+  smoke-tests-api:
+    needs: [backend-staging-deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - name: API Smoke Tests
+        run: |
+          URL="${{ secrets.BACKEND_STAGING_URL }}"; \
+          if [ -z "$URL" ]; then echo "BACKEND_STAGING_URL not set; skipping"; exit 0; fi
+          set -e
+          curl -sf "$URL/health" >/dev/null
+          curl -sf "$URL/ready" >/dev/null
+          echo "API smoke tests passed for $URL"

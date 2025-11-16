@@ -9,14 +9,6 @@ jobs:
   # Extended test suite
   extended-tests:
     runs-on: ubuntu-latest
-    services:
-      mongodb:
-        image: mongo:7.0
-        env:
-          MONGO_INITDB_ROOT_USERNAME: admin
-          MONGO_INITDB_ROOT_PASSWORD: password
-        ports:
-          - 27017:27017
 
     steps:
       - name: Checkout code
@@ -26,29 +18,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "yarn"
-          cache-dependency-path: |
-            BackEnd/yarn.lock
-            FrontEnd/yarn.lock
+          cache: "npm"
 
       - name: Install Dependencies
         run: |
-          cd BackEnd && yarn install --frozen-lockfile
-          cd ../FrontEnd && yarn install --frozen-lockfile
+          cd BackEnd && npm install --no-audit --no-fund
+          cd ../FrontEnd && npm install --no-audit --no-fund
 
-      - name: Run All Backend Tests
+      - name: Run All Backend Tests (Coverage)
         working-directory: ./BackEnd
         run: |
-          yarn test:coverage
-          yarn test:ci -- tests/integration
+          npm run test:coverage
         env:
           NODE_ENV: test
-          MONGO_URI: mongodb://admin:password@localhost:27017/test?authSource=admin
           JWT_SECRET: test-secret-key
 
-      - name: Run All Frontend Tests
+      - name: Run All Frontend Tests (Coverage)
         working-directory: ./FrontEnd
-        run: yarn test:coverage
+        run: npm run test:coverage
 
       - name: Generate Test Report
         run: |

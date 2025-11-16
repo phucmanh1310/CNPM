@@ -26,22 +26,24 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
-      NODE_ENV: development
-      PORT: 8000
-      MONGODB_URL: mongodb+srv://phucmanhtran08_db_user:manhtran11@cluster0.aabsg6y.mongodb.net/KTPM_ThayTai
-      JWT_SECRET: FGFGDFGDF
-      EMAIL: phucmanhtran08@gmail.com
-      PASS: zgsg csjt sueg yjsx
-      CLOUDINARY_CLOUD_NAME: dpsiy73bv
-      CLOUDINARY_API_KEY: 928197292742428
-      CLOUDINARY_API_SECRET: 0XUtqaoI6OAuEV5CajVfu-3QuHU
-      MOMO_PARTNER_CODE: MOMO
-      MOMO_ACCESS_KEY: F8BBA842ECF85
-      MOMO_SECRET_KEY: K951B6PE1waDMi640xX08PD3vg6EkVlz
-      MOMO_ENVIRONMENT: sandbox
-      MOMO_RETURN_URL: http://localhost:5173/payment/success
-      MOMO_NOTIFY_URL: http://localhost:8000/api/payment/momo/callback
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-8000}
+      MONGODB_URL: ${MONGODB_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      EMAIL: ${EMAIL}
+      PASS: ${PASS}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      MOMO_PARTNER_CODE: ${MOMO_PARTNER_CODE}
+      MOMO_ACCESS_KEY: ${MOMO_ACCESS_KEY}
+      MOMO_SECRET_KEY: ${MOMO_SECRET_KEY}
+      MOMO_ENVIRONMENT: ${MOMO_ENVIRONMENT:-sandbox}
+      MOMO_RETURN_URL: ${MOMO_RETURN_URL:-http://localhost:5173/payment/success}
+      MOMO_NOTIFY_URL: ${MOMO_NOTIFY_URL:-http://localhost:8000/api/payment/momo/callback}
     volumes:
       - ./BackEnd:/app
       - /app/node_modules
