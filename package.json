@@ -6,7 +6,7 @@
     "dev": "concurrently \"yarn dev:backend\" \"yarn dev:frontend\"",
     "dev:backend": "cd BackEnd && yarn dev",
     "dev:frontend": "cd FrontEnd && yarn dev",
-    "start": "node BackEnd/index.js",
+    "start": "cd BackEnd && node index.js",
     "test": "concurrently \"yarn test:backend\" \"yarn test:frontend\"",
     "test:backend": "cd BackEnd && yarn test",
     "test:frontend": "cd FrontEnd && yarn test",
