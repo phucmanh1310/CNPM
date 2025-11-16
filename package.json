@@ -6,6 +6,8 @@
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "cd BackEnd && npm run dev",
     "dev:frontend": "cd FrontEnd && npm run dev",
+    "start": "npm --prefix BackEnd run start",
+    "postinstall": "npm --prefix BackEnd install --omit=dev",
     "test": "concurrently \"npm run test:backend\" \"npm run test:frontend\"",
     "test:backend": "cd BackEnd && npm test",
     "test:frontend": "cd FrontEnd && npm test",
