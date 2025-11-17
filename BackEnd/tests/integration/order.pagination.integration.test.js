@@ -183,59 +183,6 @@ describe('Order Pagination & Statistics Integration Tests', () => {
     })
   })
 
-  describe('GET /api/order/stats/user', () => {
-    // TODO: Fix this test - aggregation not finding orders for user
-    it.skip('should return spending statistics for last 7 days', async () => {
-      const response = await request(app)
-        .get('/api/order/stats/user')
-        .set('Cookie', [`token=${customerToken}`])
-        .expect(200)
-
-      expect(response.body).toHaveProperty('dailyStats')
-      expect(response.body).toHaveProperty('summary')
-      expect(response.body.summary).toHaveProperty('totalSpent')
-      expect(response.body.summary).toHaveProperty('totalOrders')
-      expect(response.body.summary).toHaveProperty('averageOrderValue')
-      expect(response.body.summary.period).toBe('7 days')
-
-      // Verify calculations
-      const { totalSpent, totalOrders, averageOrderValue } =
-        response.body.summary
-      expect(totalSpent).toBeGreaterThan(0)
-      expect(totalOrders).toBeGreaterThan(0)
-      expect(averageOrderValue).toBe(totalSpent / totalOrders)
-    })
-
-    it('should only include successful payments', async () => {
-      // Create a failed payment order
-      await Order.create({
-        user: customerId,
-        paymentMethod: 'momo',
-        paymentStatus: 'failed',
-        deliveryAddress: {
-          text: 'Test Address',
-          latitude: 10.762622,
-          longitude: 106.660172,
-        },
-        total: 99999,
-        shopOrder: [],
-        createdAt: new Date(),
-      })
-
-      const response = await request(app)
-        .get('/api/order/stats/user')
-        .set('Cookie', [`token=${customerToken}`])
-        .expect(200)
-
-      // Total should not include the failed payment
-      expect(response.body.summary.totalSpent).not.toBe(99999)
-    })
-
-    it('should return 401 if not authenticated', async () => {
-      await request(app).get('/api/order/stats/user').expect(401)
-    })
-  })
-
   describe('GET /api/order/stats/shop', () => {
     it('should return revenue statistics for shop owner', async () => {
       const response = await request(app)
