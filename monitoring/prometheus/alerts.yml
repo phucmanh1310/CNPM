@@ -61,3 +61,67 @@ groups:
         annotations:
           summary: "Backend is down"
           description: "Backend service is not responding"
+
+  # CI/CD Pipeline Alerts
+  - name: cicd_alerts
+    interval: 30s
+    rules:
+      # Alert khi CI build fail
+      - alert: CIBuildFailed
+        expr: ci_build_status == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CI Build Failed: {{ $labels.workflow }} on {{ $labels.branch }}"
+          description: "Build failed for workflow {{ $labels.workflow }} on branch {{ $labels.branch }} (Run ID: {{ $labels.run_id }})"
+
+      # Alert khi test pass rate thấp
+      - alert: LowTestPassRate
+        expr: ci_test_pass_rate < 80
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low Test Pass Rate: {{ $value }}%"
+          description: "Test pass rate is {{ $value }}% for {{ $labels.workflow }} on {{ $labels.branch }}"
+
+      # Alert khi có tests failed
+      - alert: TestsFailed
+        expr: ci_tests_failed > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tests Failed: {{ $value }} tests"
+          description: "{{ $value }} tests failed in {{ $labels.workflow }} on {{ $labels.branch }}"
+
+      # Alert khi test duration quá lâu
+      - alert: SlowTestExecution
+        expr: ci_test_duration_seconds > 120
+        for: 1m
+        labels:
+          severity: info
+        annotations:
+          summary: "Slow Test Execution: {{ $value }}s"
+          description: "Test execution took {{ $value }}s for {{ $labels.workflow }} (threshold: 120s)"
+
+      # Alert khi coverage giảm
+      - alert: CoverageDropped
+        expr: ci_coverage_percentage < 70
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Code Coverage Dropped: {{ $value }}%"
+          description: "Code coverage is {{ $value }}% (threshold: 70%) for {{ $labels.workflow }}"
+
+      # Alert khi build liên tục fail
+      - alert: ConsecutiveBuildFailures
+        expr: count_over_time(ci_build_status{ci_build_status="0"}[30m]) >= 3
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Multiple Consecutive Build Failures"
+          description: "3 or more builds have failed in the last 30 minutes for {{ $labels.workflow }}"
